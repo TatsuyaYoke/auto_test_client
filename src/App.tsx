@@ -5,7 +5,7 @@ import { useSetRecoilState } from 'recoil'
 import { useWindowSize } from 'usehooks-ts'
 
 import { isMaximizeState } from '@atoms/PlotSettingAtom'
-import { AppBar, GraphPlot, PlotSetting } from '@components'
+import { AppBar, MySideBar } from '@components'
 
 export const App = () => {
   const headerHeight = '30px'
@@ -24,8 +24,7 @@ export const App = () => {
     <Box>
       {window.Main && <AppBar height={headerHeight} />}
       <Container maxW="container.2xl" p={0} pt={headerHeight} display="flex" minH="100vh">
-        <PlotSetting width="450px" flexShrink={0} />
-        <GraphPlot />
+        <MySideBar width="450px" flexShrink={0} />
       </Container>
     </Box>
   )
