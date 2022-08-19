@@ -1,5 +1,7 @@
 import { Box, Tabs, Tab, TabPanel, TabPanels, TabList, Text } from '@chakra-ui/react'
 
+import { ConnectBox } from '@components/ConnectBox'
+
 type Props = {
   headerHeight: number | string
 }
@@ -18,7 +20,7 @@ export const BodyBox = (props: Props) => {
         </TabList>
         <TabPanels h={`calc(100% - ${headerHeight})`}>
           <TabPanel h="100%">
-            <Text>Connect</Text>
+            <ConnectBox />
           </TabPanel>
           <TabPanel h="100%">
             <Text>Bus</Text>

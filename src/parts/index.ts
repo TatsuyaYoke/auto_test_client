@@ -1,7 +1,3 @@
-import { DayPicker } from '@parts/DayPicker'
-import { Graph } from '@parts/Graph'
-import { MyPlot } from '@parts/MyPlot'
-import { MySelect } from '@parts/MySelect'
-import { MySwitch } from '@parts/MySwitch'
+import { BadgeSuccess } from '@parts/BadgeSuccess'
 
-export { Graph, MySelect, MySwitch, DayPicker, MyPlot }
+export { BadgeSuccess }
