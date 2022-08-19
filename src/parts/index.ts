@@ -1,3 +1,3 @@
-import { BadgeSuccess } from '@parts/BadgeSuccess'
+import { BadgeSuccessBox } from '@parts/BadgeSuccess'
 
-export { BadgeSuccess }
+export { BadgeSuccessBox }

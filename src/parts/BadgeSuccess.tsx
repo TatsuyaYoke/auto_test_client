@@ -5,7 +5,7 @@ type Props = {
   successText: string
   failText: string
 }
-export const BadgeSuccess = (props: Props) => {
+export const BadgeSuccessBox = (props: Props) => {
   const { isSuccess, successText, failText } = props
 
   return (

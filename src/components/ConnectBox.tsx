@@ -1,6 +1,6 @@
-import { Badge, Box, Button, Flex, HStack } from '@chakra-ui/react'
+import { Box, Button, HStack } from '@chakra-ui/react'
 
-import { BadgeSuccess } from '@parts'
+import { BadgeSuccessBox } from '@parts'
 
 export const ConnectBox = () => {
   console.log('Connect')
@@ -15,7 +15,7 @@ export const ConnectBox = () => {
         <Button width="150px" colorScheme="teal" onClick={hello}>
           Hello
         </Button>
-        <BadgeSuccess isSuccess={true} successText="OPEN" failText="CLOSE" />
+        <BadgeSuccessBox isSuccess={true} successText="OPEN" failText="CLOSE" />
       </HStack>
     </Box>
   )
