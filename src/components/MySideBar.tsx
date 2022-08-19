@@ -13,12 +13,24 @@ export const MySideBar = (props: Props) => {
   const { width, flexShrink } = props
   const { colorMode, toggleColorMode } = useColorMode()
   const sidebarBg = useColorModeValue('gray.50', 'gray.700')
-  
+
   const hello = () => {
-      const baseUrl= "http://127.0.0.1:8001"
-      axios.get(baseUrl).then((response) => {
-        console.log(response.data)
-      })
+    const baseUrl = 'http://127.0.0.1:8001'
+    axios.get(baseUrl).then((response) => {
+      console.log(response.data)
+    })
+  }
+  const connect = () => {
+    const baseUrl = 'http://127.0.0.1:8001/bus/bus_jig_connect'
+    axios.get(baseUrl).then((response) => {
+      console.log(response.data)
+    })
+  }
+  const satEna = () => {
+    const baseUrl = 'http://127.0.0.1:8001/bus/sat_ena'
+    axios.get(baseUrl).then((response) => {
+      console.log(response.data)
+    })
   }
 
   return (
@@ -40,6 +52,12 @@ export const MySideBar = (props: Props) => {
         />
         <Button width="100%" colorScheme="teal" onClick={hello}>
           Hello
+        </Button>
+        <Button width="100%" colorScheme="teal" onClick={connect}>
+          Bus Jig Connect
+        </Button>
+        <Button width="100%" colorScheme="teal" onClick={satEna}>
+          SAT ENA
         </Button>
       </VStack>
     </VStack>

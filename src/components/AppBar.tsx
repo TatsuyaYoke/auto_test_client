@@ -22,9 +22,9 @@ export const AppBar = (props: Props) => {
   }
 
   return (
-    <Flex align="center" h={height} w="100%" bg={bgColor} pos="fixed" top={0} left={0} zIndex={2} className="draggable">
+    <Flex align="center" h={height} w="100%" bg={bgColor} top={0} left={0} zIndex={2} className="draggable">
       <Text fontSize="xs" pl={3}>
-        TLM VIEWER
+        SAT AUTO CLIENT
       </Text>
       <Spacer />
       <Box

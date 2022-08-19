@@ -16,7 +16,7 @@
   "repository": {
     "url": "https://github.com/lTimeless/vite-reactts-electron-starter"
   },
-  "productName": "TLM VIEWER",
+  "productName": "SAT AUTO CLIENT",
   "scripts": {
     "dev": "concurrently \"yarn dev:vite\" \"yarn dev:electron\"",
     "dev:vite": "vite",
