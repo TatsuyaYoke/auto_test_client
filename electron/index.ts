@@ -1,12 +1,8 @@
 import { BrowserWindow, app, ipcMain, dialog } from 'electron'
 import isDev from 'electron-is-dev'
-import * as fs from 'fs'
 import { join } from 'path'
 
-import * as csv from 'csv'
 import reload from 'electron-reload'
-
-import { convertToCsvData } from './functions'
 
 import type { MyIpcChannelDataType, MyIpcChannelType } from '../types'
 import type { IpcMainInvokeEvent } from 'electron'
@@ -79,30 +75,7 @@ const createWindow = () => {
         return result.filePaths[0]
       })
   )
-  myIpcMain.handle('saveFile', async (_event, data) => {
-    const path = dialog.showSaveDialogSync(window, {
-      buttonLabel: 'Save',
-      filters: [{ name: 'CSV', extensions: ['csv'] }],
-      properties: ['createDirectory'],
-    })
 
-    if (path === undefined) {
-      return { success: false, error: 'Cancel' } as const
-    }
-    const csvData = convertToCsvData(data)
-    let errorMessage = ''
-    try {
-      csv.stringify(csvData, { header: true }, (error, output) => {
-        errorMessage = error ? error.message : ''
-        fs.writeFileSync(path, output)
-      })
-      if (errorMessage.length === 0) return { success: true, path: path } as const
-      return { success: false, error: errorMessage } as const
-    } catch (error) {
-      if (error instanceof Error) return { success: false, error: error.message } as const
-      return { success: false, error: 'Unknown Error' } as const
-    }
-  })
   myIpcMain.handle('isMaximize', async () => window.isMaximized())
 }
 
@@ -125,21 +98,3 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()
 })
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
-
-// ipcMain.handle('data', async (_event: IpcMainInvokeEvent, path, query) => {
-//   // event.sender.send('data', data)
-//   const resolvedPath = resolvePath(path, '共有ドライブ', 'Shared drives')
-//   if (resolvedPath) {
-//     const data = await readDbSync(resolvedPath, query)
-//     return data
-//   }
-//   return null
-// })
-
-// ipcMain.on('message', (event: IpcMainEvent, data: any) => {
-//   console.log(data)
-//   setTimeout(() => event.sender.send('message', 'hi from electron'), 500)
-// })

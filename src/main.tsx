@@ -10,7 +10,7 @@ import './index.css'
 import type { ThemeConfig } from '@chakra-ui/react'
 
 const config: ThemeConfig = {
-  initialColorMode: 'light',
+  initialColorMode: 'dark',
   useSystemColorMode: false,
 }
 const theme = extendTheme({ config })

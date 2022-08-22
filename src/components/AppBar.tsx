@@ -1,7 +1,7 @@
 import { Flex, Spacer, Text, Box, useColorModeValue } from '@chakra-ui/react'
 import { useRecoilState } from 'recoil'
 
-import { isMaximizeState } from '@atoms/PlotSettingAtom'
+import { isMaximizeState } from '@atoms/SettingAtom'
 
 type Props = {
   height: number | string

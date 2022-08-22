@@ -4,7 +4,7 @@ import { Box } from '@chakra-ui/react'
 import { useSetRecoilState } from 'recoil'
 import { useWindowSize } from 'usehooks-ts'
 
-import { isMaximizeState } from '@atoms/PlotSettingAtom'
+import { isMaximizeState } from '@atoms/SettingAtom'
 import { AppBar, BodyBox } from '@components'
 
 export const App = () => {

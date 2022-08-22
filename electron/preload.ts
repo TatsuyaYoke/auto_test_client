@@ -1,6 +1,7 @@
+import { exec } from 'child_process'
 import { ipcRenderer, contextBridge } from 'electron'
 
-import { getSettings, getData } from './functions'
+import { getSettings } from './functions'
 
 import type { Main, MyIpcChannelDataType, MyIpcChannelType } from '../types'
 
@@ -12,8 +13,6 @@ const myIpcRenderer = {
 }
 
 export const api: Main = {
-  getSettings: () => getSettings(),
-  getData: (request) => getData(request),
   Minimize: () => {
     myIpcRenderer.invoke('Minimize')
   },
@@ -24,12 +23,11 @@ export const api: Main = {
     myIpcRenderer.invoke('Close')
   },
   openFileDialog: () => myIpcRenderer.invoke('openFileDialog'),
-  saveFile: (data) => myIpcRenderer.invoke('saveFile', data),
   isMaximize: () => myIpcRenderer.invoke('isMaximize'),
-  // sendMessage: (message) => ipcRenderer.send('message', message),
-  // on: (channel: string, callback: (data: any) => void) => {
-  //   ipcRenderer.on(channel, (_, data) => callback(data))
-  // },
+  getSettings: () => getSettings(),
+  startApi: () => {
+    exec('C:/Users/81809/src/git/sat_auto/sat_auto_test_api/sat_auto_test_api.sh')
+  },
 }
 
 contextBridge.exposeInMainWorld('Main', api)
