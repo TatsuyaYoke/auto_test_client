@@ -6,7 +6,7 @@
   "author": {
     "name": "Yoke"
   },
-  "description": "Quick Look TLM Viewer and output TLM as CSV",
+  "description": "Client for sat auto test api",
   "keywords": [
     "vite",
     "react",
