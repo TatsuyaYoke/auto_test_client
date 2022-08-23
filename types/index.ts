@@ -15,7 +15,8 @@ export type MyIpcChannelType = keyof MyIpcChannelDataType
 
 export type Main = MyIpcChannelDataType & {
   getSettings: () => ApiReturnType<AppSettingsType>
-  startApi: () => void
+  startApi: () => boolean
+  stopApi: (pidList: number[]) => void
 }
 
 declare global {
@@ -57,3 +58,16 @@ export type QuerySuccess<T> = { success: true; data: T }
 export type QueryError = { success: false; error: string }
 export type QueryReturnType<T> = QuerySuccess<T> | QueryError
 export type ApiReturnType<T> = QueryReturnType<T>
+
+const errorSchema = z.object({
+  success: z.literal(false),
+  error: z.string(),
+})
+
+export const getPidSchema = z.union([
+  z.object({
+    success: z.literal(true),
+    data: z.array(z.number()),
+  }),
+  errorSchema,
+])
