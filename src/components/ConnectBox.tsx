@@ -2,12 +2,16 @@ import { useEffect, useState } from 'react'
 
 import { Box, Button, HStack, useToast, VStack, StackDivider, Text } from '@chakra-ui/react'
 import axios from 'axios'
-import { useRecoilState } from 'recoil'
+import { useRecoilState, useRecoilValue } from 'recoil'
+import { useLocalStorage } from 'usehooks-ts'
 
-import { settingState } from '@atoms/SettingAtom'
-import { Error } from '@components'
+import { projectSettingState, projectState, settingState } from '@atoms/SettingAtom'
+import { Error, ProjectSelect } from '@components'
+import { stringToSelectOption } from '@functions'
 import { BadgeSuccessBox } from '@parts'
 import { getPidSchema } from '@types'
+
+import type { SelectOptionType } from '@types'
 
 const BASE_URL = 'http://127.0.0.1:8001'
 const WAIT_SEC_API_STARTUP = 10
@@ -45,13 +49,34 @@ const getPid = (): Promise<{ success: true; data: number[] } | { success: false;
 
 export const ConnectBox = () => {
   const toast = useToast()
+  const [isLoading, setIsLoading] = useState(true)
   const [isWorkingApi, setIsWorkingApi] = useState(false)
   const [isLoadingApi, setIsLoadingApi] = useState(false)
   const [pidList, setPidList] = useState<number[]>([])
   const [setting, setSetting] = useRecoilState(settingState)
+  const [projectSetting, setProjectSetting] = useRecoilState(projectSettingState)
+  const [projectIndex, setProjectIndex] = useLocalStorage('ProjectIndex', 0)
+  const project = useRecoilValue(projectState)
+  const [projectOptionList, setProjectOptionList] = useState<SelectOptionType[]>([])
+
   const initializeSetting = () => {
     const response = window.Main.getSettings()
     setSetting(response)
+    if (response.success) {
+      setProjectOptionList(() => response.data.project.map((e) => stringToSelectOption(e.pjName)))
+      if (project) {
+        setProjectIndex(() => {
+          const foundIndex = response.data.project.findIndex((e) => e.pjName === project.value)
+          const foundPjSetting = response.data.project[foundIndex]
+          if (foundPjSetting) setProjectSetting(foundPjSetting)
+          return foundIndex
+        })
+      } else {
+        const foundPjSetting = response.data.project[projectIndex]
+        if (foundPjSetting) setProjectSetting(foundPjSetting)
+      }
+    }
+    setIsLoading(false)
   }
   const startApi = async () => {
     if (!setting?.success) return
@@ -99,7 +124,7 @@ export const ConnectBox = () => {
 
   useEffect(() => {
     initializeSetting()
-  }, [])
+  }, [project])
 
   return (
     <Box h="100%">
@@ -110,11 +135,23 @@ export const ConnectBox = () => {
       />
       {setting?.success && (
         <VStack divider={<StackDivider />} spacing={4} align="stretch" mt="10px">
-          <Box>
-            <Text fontSize="1.5em" fontWeight={600} mb="10px">
+          <VStack spacing={4}>
+            <Text fontSize="1.5em" fontWeight={600} w="100%">
               Common
             </Text>
-            <HStack spacing="20px">
+            <HStack spacing={4} w="100%">
+              <Text w="100px" textAlign="center" fontSize="1.2em" fontWeight={600}>
+                Project
+              </Text>
+              {!isLoading && (
+                <ProjectSelect
+                  options={projectOptionList}
+                  defaultValue={projectSetting?.pjName ? stringToSelectOption(projectSetting.pjName) : undefined}
+                  width="200px"
+                />
+              )}
+            </HStack>
+            <HStack spacing={4} w="100%">
               <Text w="100px" textAlign="center" fontSize="1.2em" fontWeight={600}>
                 API
               </Text>
@@ -133,7 +170,7 @@ export const ConnectBox = () => {
               </Button>
               <BadgeSuccessBox isSuccess={isWorkingApi} successText="OPEN" failText="CLOSE" />
             </HStack>
-          </Box>
+          </VStack>
           <Box>
             <Text fontSize="1.5em" fontWeight={600} mb="10px">
               Observation
