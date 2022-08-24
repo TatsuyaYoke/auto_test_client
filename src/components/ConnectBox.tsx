@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { Box, Button, HStack, useToast, VStack, StackDivider, Text } from '@chakra-ui/react'
+import { Box, Button, HStack, useToast, VStack, StackDivider, Text, Flex } from '@chakra-ui/react'
 import axios from 'axios'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import { useLocalStorage } from 'usehooks-ts'
@@ -9,7 +9,7 @@ import { projectSettingState, projectState, settingState } from '@atoms/SettingA
 import { Error, ProjectSelect } from '@components'
 import { stringToSelectOption } from '@functions'
 import { BadgeSuccessBox } from '@parts'
-import { getPidSchema } from '@types'
+import { connectSchema, getPidSchema } from '@types'
 
 import type { SelectOptionType } from '@types'
 
@@ -47,6 +47,14 @@ const getPid = (
     }, waitSec * 1000)
   })
 
+const CONNECT_ENDPOINT = {
+  powerSensor: 'obs/power_sensor',
+  signalAnalyzer: 'obs/signal_analyzer',
+  qdra: 'trans/qdra',
+  qmr: 'trans/qmr',
+} as const
+type ConnectTargetType = keyof typeof CONNECT_ENDPOINT
+
 export const ConnectBox = () => {
   const toast = useToast()
   const [isLoading, setIsLoading] = useState(true)
@@ -58,6 +66,13 @@ export const ConnectBox = () => {
   const [projectIndex, setProjectIndex] = useLocalStorage('ProjectIndex', 0)
   const project = useRecoilValue(projectState)
   const [projectOptionList, setProjectOptionList] = useState<SelectOptionType[]>([])
+
+  const [isConnecting, setIsConnecting] = useState({
+    powerSensor: false,
+    signalAnalyzer: false,
+    qdra: false,
+    qmr: false,
+  })
 
   const initializeSetting = () => {
     const response = window.Main.getSettings()
@@ -124,6 +139,33 @@ export const ConnectBox = () => {
     setIsWorkingApi(false)
   }
 
+  const checkConnection = async (action: 'connect' | 'disconnect', target: ConnectTargetType) => {
+    if (setting?.success) {
+      const apiUrl = setting.data.common.apiUrl
+      const response = await axios.get(`${apiUrl}/${CONNECT_ENDPOINT[target]}/${action}`).catch(() => ({
+        data: {
+          success: false,
+          error: 'Not exist: API',
+        },
+      }))
+      const schemaResult = connectSchema.safeParse(response.data)
+      if (schemaResult.success) {
+        setIsConnecting((prev) => {
+          const newObject = { ...prev }
+          newObject[target] = schemaResult.data.isOpen
+          return newObject
+        })
+      }
+    }
+  }
+
+  const checkAll = () => {
+    const instList = Object.keys(CONNECT_ENDPOINT) as ConnectTargetType[]
+    instList.forEach((inst) => {
+      checkConnection('connect', inst)
+    })
+  }
+
   useEffect(() => {
     initializeSetting()
   }, [project])
@@ -138,9 +180,11 @@ export const ConnectBox = () => {
       {setting?.success && (
         <VStack divider={<StackDivider />} spacing={4} align="stretch" mt="10px">
           <VStack spacing={4}>
-            <Text fontSize="1.5em" fontWeight={600} w="100%">
-              Common
-            </Text>
+            <Flex w="100%">
+              <Text fontSize="1.5em" fontWeight={600} borderBottom="solid 2px" justifyContent="left">
+                Common
+              </Text>
+            </Flex>
             <HStack spacing={4} w="100%">
               <Text w="100px" textAlign="center" fontSize="1.2em" fontWeight={600}>
                 Project
@@ -172,12 +216,101 @@ export const ConnectBox = () => {
               </Button>
               <BadgeSuccessBox isSuccess={isWorkingApi} successText="OPEN" failText="CLOSE" />
             </HStack>
+            <HStack spacing={4} w="100%">
+              <Text w="100px" textAlign="center" fontSize="1.2em" fontWeight={600}>
+                Connect
+              </Text>
+              <Button width="150px" colorScheme="teal" onClick={checkAll}>
+                All
+              </Button>
+            </HStack>
           </VStack>
-          <Box>
-            <Text fontSize="1.5em" fontWeight={600} mb="10px">
-              Observation
-            </Text>
-          </Box>
+          <VStack spacing={4}>
+            <Flex w="100%">
+              <Text fontSize="1.5em" fontWeight={600} borderBottom="solid 2px" justifyContent="left">
+                Observation
+              </Text>
+            </Flex>
+            <HStack spacing={4} w="100%">
+              <Text w="200px" textAlign="center" fontSize="1.2em" fontWeight={600}>
+                POWER SENSOR
+              </Text>
+              <Button
+                width="150px"
+                colorScheme="teal"
+                onClick={() => checkConnection('connect', 'powerSensor')}
+                isDisabled={isConnecting.powerSensor}
+              >
+                CONNECT
+              </Button>
+              <Button
+                width="150px"
+                colorScheme="teal"
+                onClick={() => checkConnection('disconnect', 'powerSensor')}
+                isDisabled={!isConnecting.powerSensor}
+              >
+                DISCONNECT
+              </Button>
+              <BadgeSuccessBox isSuccess={isConnecting.powerSensor} successText="OPEN" failText="CLOSE" />
+            </HStack>
+            <HStack spacing={4} w="100%">
+              <Text w="200px" textAlign="center" fontSize="1.2em" fontWeight={600}>
+                SIGNAL ANALYZER
+              </Text>
+              <Button
+                width="150px"
+                colorScheme="teal"
+                onClick={() => checkConnection('connect', 'signalAnalyzer')}
+                isDisabled={isConnecting.signalAnalyzer}
+              >
+                CONNECT
+              </Button>
+              <Button
+                width="150px"
+                colorScheme="teal"
+                onClick={() => checkConnection('disconnect', 'signalAnalyzer')}
+                isDisabled={!isConnecting.signalAnalyzer}
+              >
+                DISCONNECT
+              </Button>
+              <BadgeSuccessBox isSuccess={isConnecting.signalAnalyzer} successText="OPEN" failText="CLOSE" />
+            </HStack>
+          </VStack>
+          <VStack spacing={4}>
+            <Flex w="100%">
+              <Text fontSize="1.5em" fontWeight={600} borderBottom="solid 2px" justifyContent="left">
+                Transfer
+              </Text>
+            </Flex>
+            <HStack spacing={4} w="100%">
+              <Text w="200px" textAlign="center" fontSize="1.2em" fontWeight={600}>
+                qDRA
+              </Text>
+              <Button
+                width="150px"
+                colorScheme="teal"
+                onClick={() => checkConnection('connect', 'qdra')}
+                isDisabled={isConnecting.qdra}
+              >
+                CONNECT
+              </Button>
+              <BadgeSuccessBox isSuccess={isConnecting.qdra} successText="OPEN" failText="CLOSE" />
+            </HStack>
+            <HStack spacing={4} w="100%">
+              <Text w="200px" textAlign="center" fontSize="1.2em" fontWeight={600}>
+                qMR
+              </Text>
+              <Button
+                width="150px"
+                colorScheme="teal"
+                onClick={() => checkConnection('connect', 'qmr')}
+                isDisabled={isConnecting.qmr}
+              >
+                CONNECT
+              </Button>
+              <BadgeSuccessBox isSuccess={isConnecting.qmr} successText="OPEN" failText="CLOSE" />
+            </HStack>
+          </VStack>
         </VStack>
       )}
     </Box>

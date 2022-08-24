@@ -72,3 +72,7 @@ export const getPidSchema = z.union([
   }),
   errorSchema,
 ])
+
+export const connectSchema = z.object({
+  isOpen: z.boolean(),
+})
