@@ -1,6 +1,6 @@
 import { atom } from 'recoil'
 
-import type { AppSettingsType, SelectOptionType } from '@types'
+import type { ApiReturnType, AppSettingsType, SelectOptionType } from '@types'
 import type { SingleValue } from 'chakra-react-select'
 
 export const isMaximizeState = atom<boolean>({
@@ -13,7 +13,7 @@ export const projectState = atom<SingleValue<SelectOptionType>>({
   default: null,
 })
 
-export const settingState = atom<AppSettingsType | null>({
+export const settingState = atom<ApiReturnType<AppSettingsType> | null>({
   key: 'settingState',
   default: null,
 })

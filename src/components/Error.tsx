@@ -15,12 +15,20 @@ import {
 type Props = {
   isError?: boolean
   isWarning?: boolean
+  successMessage?: string
   errorMessage?: string
   warningMessages?: string[]
   noDisplayWhenSuccess?: boolean
 }
 export const Error = (props: Props) => {
-  const { isError = false, isWarning = false, errorMessage, warningMessages, noDisplayWhenSuccess = false } = props
+  const {
+    isError = false,
+    isWarning = false,
+    successMessage = 'Success',
+    errorMessage,
+    warningMessages,
+    noDisplayWhenSuccess = false,
+  } = props
 
   return isError || isWarning ? (
     <Accordion allowMultiple width="100%">
@@ -50,7 +58,7 @@ export const Error = (props: Props) => {
   ) : (
     <Alert status="success" variant="solid" display={noDisplayWhenSuccess ? 'none' : undefined}>
       <AlertIcon />
-      Success
+      {successMessage}
     </Alert>
   )
 }

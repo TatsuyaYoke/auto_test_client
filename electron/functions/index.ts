@@ -31,6 +31,8 @@ export const getSettings = (): ApiReturnType<AppSettingsType> => {
   const settingsBeforeParse = JSON.parse(fs.readFileSync(SETTING_PATH, 'utf8'))
   const schemaResult = appSettingsSchema.safeParse(settingsBeforeParse)
   if (!schemaResult.success) return { success: false, error: 'Cannot parse project setting file correctly' } as const
+  if (!fs.existsSync(schemaResult.data.common.apiPath))
+    return { success: false, error: 'Not found script for api' } as const
 
   return {
     success: true,

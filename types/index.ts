@@ -15,7 +15,7 @@ export type MyIpcChannelType = keyof MyIpcChannelDataType
 
 export type Main = MyIpcChannelDataType & {
   getSettings: () => ApiReturnType<AppSettingsType>
-  startApi: () => boolean
+  startApi: (apiPath?: string) => boolean
   stopApi: (pidList: number[]) => void
 }
 
@@ -39,9 +39,9 @@ export const pjSettingSchema = z.object({
 })
 export const pjSettingsSchema = z.array(pjSettingSchema)
 
-export const apiPathListSchema = z.array(z.string())
+export const apiPathSchema = z.string()
 export const commonSettingSchema = z.object({
-  apiPathList: apiPathListSchema,
+  apiPath: apiPathSchema,
 })
 
 export const appSettingsSchema = z.object({

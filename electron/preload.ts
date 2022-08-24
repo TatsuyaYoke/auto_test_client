@@ -1,7 +1,7 @@
 import { exec } from 'child_process'
 import { ipcRenderer, contextBridge } from 'electron'
 
-import { resolvePathGDrive, getSettings } from './functions'
+import { getSettings } from './functions'
 
 import type { Main, MyIpcChannelDataType, MyIpcChannelType } from '../types'
 
@@ -25,17 +25,22 @@ export const api: Main = {
   openFileDialog: () => myIpcRenderer.invoke('openFileDialog'),
   isMaximize: () => myIpcRenderer.invoke('isMaximize'),
   getSettings: () => getSettings(),
-  startApi: () => {
-    const shPath = resolvePathGDrive('C:/Users/81809/src/git/sat_auto/sat_auto_test_api/sat_auto_test_api.sh')
-    if (shPath) {
-      exec(shPath)
+  startApi: (apiPath) => {
+    if (apiPath) {
+      exec(apiPath)
       return true
     }
     return false
   },
   stopApi: (pidList: number[]) => {
+    if (pidList.length === 0) return
     pidList.forEach((pid) => {
-      process.kill(pid)
+      try {
+        process.kill(pid)
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error(e)
+      }
     })
   },
 }
