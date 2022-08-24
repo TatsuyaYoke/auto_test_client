@@ -13,13 +13,13 @@ import { getPidSchema } from '@types'
 
 import type { SelectOptionType } from '@types'
 
-const BASE_URL = 'http://127.0.0.1:8001'
-const WAIT_SEC_API_STARTUP = 10
-
-const getPid = (): Promise<{ success: true; data: number[] } | { success: false; error: string }> =>
+const getPid = (
+  apiUrl: string,
+  waitSec: number
+): Promise<{ success: true; data: number[] } | { success: false; error: string }> =>
   new Promise((resolve) => {
     setTimeout(async () => {
-      const response = await axios.get(`${BASE_URL}/getPid`).catch(() => ({
+      const response = await axios.get(`${apiUrl}/getPid`).catch(() => ({
         data: {
           success: false,
           error: 'Not exist: API',
@@ -44,7 +44,7 @@ const getPid = (): Promise<{ success: true; data: number[] } | { success: false;
         success: true,
         data: schemaResult.data.data,
       })
-    }, WAIT_SEC_API_STARTUP * 1000)
+    }, waitSec * 1000)
   })
 
 export const ConnectBox = () => {
@@ -91,7 +91,9 @@ export const ConnectBox = () => {
     }
 
     setIsLoadingApi(true)
-    const response = await getPid()
+    const apiUrl = setting.data.common.apiUrl
+    const waitSec = setting.data.common.waitSecApiStartup
+    const response = await getPid(apiUrl, waitSec)
     if (!response.success) {
       toast({
         title: response.error,

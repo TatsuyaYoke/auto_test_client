@@ -39,9 +39,10 @@ export const pjSettingSchema = z.object({
 })
 export const pjSettingsSchema = z.array(pjSettingSchema)
 
-export const apiPathSchema = z.string()
 export const commonSettingSchema = z.object({
-  apiPath: apiPathSchema,
+  apiPath: z.string(),
+  apiUrl: z.string(),
+  waitSecApiStartup: z.number(),
 })
 
 export const appSettingsSchema = z.object({
