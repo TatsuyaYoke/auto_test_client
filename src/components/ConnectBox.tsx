@@ -180,8 +180,8 @@ export const ConnectBox = () => {
       {setting?.success && (
         <VStack divider={<StackDivider />} spacing={4} align="stretch" mt="10px">
           <VStack spacing={4}>
-            <Flex w="100%">
-              <Text fontSize="1.5em" fontWeight={600} borderBottom="solid 2px" justifyContent="left">
+            <Flex justifyContent="left" w="100%">
+              <Text fontSize="1.5em" fontWeight={600} borderBottom="solid 2px">
                 Common
               </Text>
             </Flex>
@@ -226,8 +226,8 @@ export const ConnectBox = () => {
             </HStack>
           </VStack>
           <VStack spacing={4}>
-            <Flex w="100%">
-              <Text fontSize="1.5em" fontWeight={600} borderBottom="solid 2px" justifyContent="left">
+            <Flex justifyContent="left" w="100%">
+              <Text fontSize="1.5em" fontWeight={600} borderBottom="solid 2px">
                 Observation
               </Text>
             </Flex>
@@ -277,8 +277,8 @@ export const ConnectBox = () => {
             </HStack>
           </VStack>
           <VStack spacing={4}>
-            <Flex w="100%">
-              <Text fontSize="1.5em" fontWeight={600} borderBottom="solid 2px" justifyContent="left">
+            <Flex justifyContent="left" w="100%">
+              <Text fontSize="1.5em" fontWeight={600} borderBottom="solid 2px">
                 Transfer
               </Text>
             </Flex>

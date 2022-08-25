@@ -76,3 +76,9 @@ export const getPidSchema = z.union([
 export const connectSchema = z.object({
   isOpen: z.boolean(),
 })
+
+export type GraphDataType = {
+  name: string
+  x: (number | string)[]
+  y: (number | null)[]
+}

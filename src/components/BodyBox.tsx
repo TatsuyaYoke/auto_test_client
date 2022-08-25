@@ -1,6 +1,6 @@
-import { Box, Tabs, Tab, TabPanel, TabPanels, TabList, Text } from '@chakra-ui/react'
+import { Box, Tabs, Tab, TabPanel, TabPanels, TabList } from '@chakra-ui/react'
 
-import { ConnectBox } from '@components/ConnectBox'
+import { ObsBox, ConnectBox, TransBox, BusBox } from '@components'
 
 type Props = {
   headerHeight: number | string
@@ -23,13 +23,13 @@ export const BodyBox = (props: Props) => {
             <ConnectBox />
           </TabPanel>
           <TabPanel h="100%">
-            <Text>Bus</Text>
+            <BusBox />
           </TabPanel>
           <TabPanel h="100%">
-            <Text>Obs</Text>
+            <ObsBox />
           </TabPanel>
           <TabPanel h="100%">
-            <Text>Trans</Text>
+            <TransBox />
           </TabPanel>
         </TabPanels>
       </Tabs>

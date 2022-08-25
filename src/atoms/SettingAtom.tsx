@@ -22,3 +22,8 @@ export const projectSettingState = atom<PjSettingType | null>({
   key: 'projectSettingState',
   default: null,
 })
+
+export const testNameState = atom<string>({
+  key: 'testNameState',
+  default: '',
+})
