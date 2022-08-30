@@ -9,9 +9,10 @@ import { projectSettingState, projectState, settingState } from '@atoms/SettingA
 import { Error, ProjectSelect } from '@components'
 import { stringToSelectOption } from '@functions'
 import { BadgeSuccessBox } from '@parts'
-import { connectSchema, getPidSchema } from '@types'
+import { apiDataStringSchema, connectSchema, getPidSchema } from '@types'
 
 import type { SelectOptionType } from '@types'
+import type { AxiosError } from 'axios'
 
 const getPid = (
   apiUrl: string,
@@ -93,6 +94,57 @@ export const ConnectBox = () => {
     }
     setIsLoading(false)
   }
+
+  const makeDir = async (apiUrl: string, saveDirPath: string, projectValue: string) => {
+    const responseObs = await axios
+      .get(`${apiUrl}/obs/common/makeDir`, {
+        params: {
+          path_str: saveDirPath,
+          project: projectValue,
+        },
+      })
+      .catch(() => ({
+        data: {
+          success: false,
+          error: 'Not exist: API',
+        },
+      }))
+    const schemaResultObs = apiDataStringSchema.safeParse(responseObs.data)
+    if (schemaResultObs.success) {
+      if (!schemaResultObs.data.success) {
+        toast({
+          title: 'Cannot make dir for obs',
+          status: 'error',
+          isClosable: true,
+        })
+      }
+    }
+
+    const responseTrans = await axios
+      .get(`${apiUrl}/trans/common/makeDir`, {
+        params: {
+          path_str: saveDirPath,
+          project: projectValue,
+        },
+      })
+      .catch(() => ({
+        data: {
+          success: false,
+          error: 'Not exist: API',
+        },
+      }))
+    const schemaResultTrans = apiDataStringSchema.safeParse(responseTrans.data)
+    if (schemaResultTrans.success) {
+      if (!schemaResultTrans.data.success) {
+        toast({
+          title: 'Cannot make dir for trans',
+          status: 'error',
+          isClosable: true,
+        })
+      }
+    }
+  }
+
   const startApi = async () => {
     if (!setting?.success) return
     const isSuccess = window.Main.startApi(setting.data.common.apiPath)
@@ -108,7 +160,18 @@ export const ConnectBox = () => {
     setIsLoadingApi(true)
     const apiUrl = setting.data.common.apiUrl
     const waitSec = setting.data.common.waitSecApiStartup
+    const saveDirPath = setting.data.common.saveDirPath
+    const projectValue = project?.value
     const response = await getPid(apiUrl, waitSec)
+    if (!projectValue) {
+      toast({
+        title: 'Project not defined',
+        status: 'error',
+        isClosable: true,
+      })
+      setIsLoadingApi(false)
+      return
+    }
     if (!response.success) {
       toast({
         title: response.error,
@@ -128,6 +191,7 @@ export const ConnectBox = () => {
       setIsLoadingApi(false)
       return
     }
+    makeDir(apiUrl, saveDirPath, projectValue)
     setPidList(data)
     setIsWorkingApi(true)
     setIsLoadingApi(false)
@@ -137,25 +201,54 @@ export const ConnectBox = () => {
     window.Main.stopApi(pidList)
     setPidList([])
     setIsWorkingApi(false)
+    setIsConnecting((prev) => {
+      const newObject = { ...prev }
+      const keys = Object.keys(newObject) as ConnectTargetType[]
+      keys.forEach((key) => {
+        newObject[key] = false
+      })
+      return newObject
+    })
   }
 
   const checkConnection = async (action: 'connect' | 'disconnect', target: ConnectTargetType) => {
     if (setting?.success) {
       const apiUrl = setting.data.common.apiUrl
-      const response = await axios.get(`${apiUrl}/${CONNECT_ENDPOINT[target]}/${action}`).catch(() => ({
-        data: {
-          success: false,
-          error: 'Not exist: API',
-        },
-      }))
+      const response = await axios
+        .get(`${apiUrl}/${CONNECT_ENDPOINT[target]}/${action}`, {
+          timeout: 5000,
+        })
+        .catch((e: AxiosError) => {
+          let errorMessage = 'Not exist: API'
+          if (e.message.indexOf('timeout') !== -1) {
+            errorMessage = 'Timeout error'
+          }
+
+          return {
+            data: {
+              success: false,
+              error: errorMessage,
+            },
+          }
+        })
       const schemaResult = connectSchema.safeParse(response.data)
       if (schemaResult.success) {
-        setIsConnecting((prev) => {
-          const newObject = { ...prev }
-          newObject[target] = schemaResult.data.isOpen
-          return newObject
-        })
+        const data = schemaResult.data
+        if (data.success) {
+          setIsConnecting((prev) => {
+            const newObject = { ...prev }
+            newObject[target] = data.isOpen
+            return newObject
+          })
+        } else {
+          toast({
+            title: data.error,
+            status: 'error',
+            isClosable: true,
+          })
+        }
       }
+      setIsLoadingApi(false)
     }
   }
 

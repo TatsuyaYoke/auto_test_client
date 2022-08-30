@@ -40,6 +40,7 @@ export const pjSettingSchema = z.object({
 export const pjSettingsSchema = z.array(pjSettingSchema)
 
 export const commonSettingSchema = z.object({
+  saveDirPath: z.string(),
   apiPath: z.string(),
   apiUrl: z.string(),
   waitSecApiStartup: z.number(),
@@ -73,9 +74,21 @@ export const getPidSchema = z.union([
   errorSchema,
 ])
 
-export const connectSchema = z.object({
-  isOpen: z.boolean(),
-})
+export const connectSchema = z.union([
+  z.object({
+    success: z.literal(true),
+    isOpen: z.boolean(),
+  }),
+  errorSchema,
+])
+
+export const apiDataStringSchema = z.union([
+  z.object({
+    success: z.literal(true),
+    data: z.string(),
+  }),
+  errorSchema,
+])
 
 export type GraphDataType = {
   name: string
