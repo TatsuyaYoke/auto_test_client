@@ -24,6 +24,7 @@ export const api: Main = {
   },
   openFileDialog: () => myIpcRenderer.invoke('openFileDialog'),
   isMaximize: () => myIpcRenderer.invoke('isMaximize'),
+  saveCsv: (data) => myIpcRenderer.invoke('saveCsv', data),
   getSettings: () => getSettings(),
   startApi: (apiPath) => {
     if (apiPath) {

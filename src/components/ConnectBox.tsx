@@ -49,6 +49,9 @@ const getPid = (
   })
 
 const CONNECT_ENDPOINT = {
+  busJig: 'bus/bus_jig',
+  gl840: 'bus/gl840',
+  sas: 'bus/sas',
   powerSensor: 'obs/power_sensor',
   signalAnalyzer: 'obs/signal_analyzer',
   qdra: 'trans/qdra',
@@ -68,7 +71,10 @@ export const ConnectBox = () => {
   const project = useRecoilValue(projectState)
   const [projectOptionList, setProjectOptionList] = useState<SelectOptionType[]>([])
 
-  const [isConnecting, setIsConnecting] = useState({
+  const [isConnecting, setIsConnecting] = useState<{ [key in ConnectTargetType]: boolean }>({
+    busJig: false,
+    gl840: false,
+    sas: false,
     powerSensor: false,
     signalAnalyzer: false,
     qdra: false,
@@ -99,7 +105,7 @@ export const ConnectBox = () => {
     const responseObs = await axios
       .get(`${apiUrl}/obs/common/makeDir`, {
         params: {
-          path_str: saveDirPath,
+          pathStr: saveDirPath,
           project: projectValue,
         },
       })
@@ -123,7 +129,7 @@ export const ConnectBox = () => {
     const responseTrans = await axios
       .get(`${apiUrl}/trans/common/makeDir`, {
         params: {
-          path_str: saveDirPath,
+          pathStr: saveDirPath,
           project: projectValue,
         },
       })
@@ -219,9 +225,9 @@ export const ConnectBox = () => {
           timeout: 5000,
         })
         .catch((e: AxiosError) => {
-          let errorMessage = 'Not exist: API'
+          let errorMessage = `(${target}) Not exist: API`
           if (e.message.indexOf('timeout') !== -1) {
-            errorMessage = 'Timeout error'
+            errorMessage = `(${target}) Timeout error`
           }
 
           return {
@@ -242,11 +248,17 @@ export const ConnectBox = () => {
           })
         } else {
           toast({
-            title: data.error,
+            title: `(${target}) ${data.error}`,
             status: 'error',
             isClosable: true,
           })
         }
+      } else {
+        toast({
+          title: `(${target}) Response data type is not correct`,
+          status: 'error',
+          isClosable: true,
+        })
       }
       setIsLoadingApi(false)
     }
@@ -316,6 +328,79 @@ export const ConnectBox = () => {
               <Button width="150px" colorScheme="teal" onClick={checkAll}>
                 All
               </Button>
+            </HStack>
+          </VStack>
+          <VStack spacing={4}>
+            <Flex justifyContent="left" w="100%">
+              <Text fontSize="1.5em" fontWeight={600} borderBottom="solid 2px">
+                Bus
+              </Text>
+            </Flex>
+            <HStack spacing={4} w="100%">
+              <Text w="200px" textAlign="center" fontSize="1.2em" fontWeight={600}>
+                BUS JIG
+              </Text>
+              <Button
+                width="150px"
+                colorScheme="teal"
+                onClick={() => checkConnection('connect', 'busJig')}
+                isDisabled={isConnecting.busJig}
+              >
+                CONNECT
+              </Button>
+              <Button
+                width="150px"
+                colorScheme="teal"
+                onClick={() => checkConnection('disconnect', 'busJig')}
+                isDisabled={!isConnecting.busJig}
+              >
+                DISCONNECT
+              </Button>
+              <BadgeSuccessBox isSuccess={isConnecting.busJig} successText="OPEN" failText="CLOSE" />
+            </HStack>
+            <HStack spacing={4} w="100%">
+              <Text w="200px" textAlign="center" fontSize="1.2em" fontWeight={600}>
+                GL840
+              </Text>
+              <Button
+                width="150px"
+                colorScheme="teal"
+                onClick={() => checkConnection('connect', 'gl840')}
+                isDisabled={isConnecting.gl840}
+              >
+                CONNECT
+              </Button>
+              <Button
+                width="150px"
+                colorScheme="teal"
+                onClick={() => checkConnection('disconnect', 'gl840')}
+                isDisabled={!isConnecting.gl840}
+              >
+                DISCONNECT
+              </Button>
+              <BadgeSuccessBox isSuccess={isConnecting.gl840} successText="OPEN" failText="CLOSE" />
+            </HStack>
+            <HStack spacing={4} w="100%">
+              <Text w="200px" textAlign="center" fontSize="1.2em" fontWeight={600}>
+                SAS
+              </Text>
+              <Button
+                width="150px"
+                colorScheme="teal"
+                onClick={() => checkConnection('connect', 'sas')}
+                isDisabled={isConnecting.sas}
+              >
+                CONNECT
+              </Button>
+              <Button
+                width="150px"
+                colorScheme="teal"
+                onClick={() => checkConnection('disconnect', 'sas')}
+                isDisabled={!isConnecting.sas}
+              >
+                DISCONNECT
+              </Button>
+              <BadgeSuccessBox isSuccess={isConnecting.sas} successText="OPEN" failText="CLOSE" />
             </HStack>
           </VStack>
           <VStack spacing={4}>

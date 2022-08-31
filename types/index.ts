@@ -9,6 +9,7 @@ export type MyIpcChannelDataType = {
   Minimize: () => void
   Close: () => void
   openFileDialog: () => Promise<string | undefined>
+  saveCsv: (data: ObjectArrayDataType) => Promise<{ success: true; path: string } | { success: false; error: string }>
   isMaximize: () => Promise<boolean>
 }
 export type MyIpcChannelType = keyof MyIpcChannelDataType
@@ -90,8 +91,40 @@ export const apiDataStringSchema = z.union([
   errorSchema,
 ])
 
+export type StartObsParamsType = {
+  testName: string
+  obsDuration: number
+  warmUpDuration: number
+  holdDuration: number
+}
+
+export const startObsReturnSchema = z.union([
+  z.object({
+    success: z.literal(true),
+    data: z.object({
+      time: z.array(z.number()),
+      power: z.array(z.number()),
+    }),
+  }),
+  errorSchema,
+])
+
+export type PowerSensorDataType = {
+  time: number[]
+  power: number[]
+}
+
 export type GraphDataType = {
   name: string
   x: (number | string)[]
   y: (number | null)[]
+}
+
+export type DataType = number | string | null
+export type ObjectDataType = {
+  [key: string]: DataType
+}
+export type ArrayObjectDataType = ObjectDataType[]
+export type ObjectArrayDataType = {
+  [key: string]: DataType[]
 }

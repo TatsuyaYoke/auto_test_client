@@ -1,8 +1,12 @@
 import { BrowserWindow, app, ipcMain, dialog } from 'electron'
 import isDev from 'electron-is-dev'
+import * as fs from 'fs'
 import { join } from 'path'
 
+import * as csv from 'csv'
 import reload from 'electron-reload'
+
+import { convertToCsvData } from './functions'
 
 import type { MyIpcChannelDataType, MyIpcChannelType } from '../types'
 import type { IpcMainInvokeEvent } from 'electron'
@@ -75,7 +79,31 @@ const createWindow = () => {
         return result.filePaths[0]
       })
   )
+  myIpcMain.handle('saveCsv', async (_event, data) => {
+    const path = dialog.showSaveDialogSync(window, {
+      buttonLabel: 'Save',
+      filters: [{ name: 'CSV', extensions: ['csv'] }],
+      properties: ['createDirectory'],
+    })
 
+    if (path === undefined) {
+      return { success: false, error: 'Cancel' } as const
+    }
+    const csvData = convertToCsvData(data)
+    if (!csvData) return { success: false, error: 'Object Empty Error' } as const
+    let errorMessage = ''
+    try {
+      csv.stringify(csvData, { header: true }, (error, output) => {
+        errorMessage = error ? error.message : ''
+        fs.writeFileSync(path, output)
+      })
+      if (errorMessage.length === 0) return { success: true, path: path } as const
+      return { success: false, error: errorMessage } as const
+    } catch (error) {
+      if (error instanceof Error) return { success: false, error: error.message } as const
+      return { success: false, error: 'Unknown Error' } as const
+    }
+  })
   myIpcMain.handle('isMaximize', async () => window.isMaximized())
 }
 

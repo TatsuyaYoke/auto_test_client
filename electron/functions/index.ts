@@ -3,7 +3,13 @@ import { join } from 'path'
 
 import { appSettingsSchema } from '../../types'
 
-import type { ApiReturnType, AppSettingsType } from '../../types'
+import type {
+  ApiReturnType,
+  AppSettingsType,
+  ObjectArrayDataType,
+  ArrayObjectDataType,
+  ObjectDataType,
+} from '../../types'
 
 export const resolvePath = (path: string, resolveName1: string, resolveName2: string): string | null => {
   if (fs.existsSync(path)) return path
@@ -38,4 +44,21 @@ export const getSettings = (): ApiReturnType<AppSettingsType> => {
     success: true,
     data: schemaResult.data,
   } as const
+}
+
+export const convertToCsvData = (inputData: ObjectArrayDataType): ArrayObjectDataType | null => {
+  const keys = Object.keys(inputData)
+  const baseKey = keys[0]
+  if (!baseKey) return null
+  const baseData = inputData[baseKey]
+  if (!baseData) return null
+
+  const outputData = baseData.map((_, index) => {
+    const data: ObjectDataType = {}
+    keys.forEach((key) => {
+      data[key] = inputData[key]?.[index] ?? null
+    })
+    return data
+  })
+  return outputData
 }
