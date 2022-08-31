@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { Box, Button, HStack, useToast, VStack, StackDivider, Text, Flex } from '@chakra-ui/react'
+import { Box, Button, HStack, useToast, VStack, StackDivider, Text, Flex, Input } from '@chakra-ui/react'
 import axios from 'axios'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import { useLocalStorage } from 'usehooks-ts'
@@ -11,7 +11,7 @@ import { stringToSelectOption } from '@functions'
 import { BadgeSuccessBox } from '@parts'
 import { apiDataStringSchema, connectSchema, getPidSchema } from '@types'
 
-import type { SelectOptionType } from '@types'
+import type { SelectOptionType, ConnectParamsType } from '@types'
 import type { AxiosError } from 'axios'
 
 const getPid = (
@@ -79,6 +79,15 @@ export const ConnectBox = () => {
     signalAnalyzer: false,
     qdra: false,
     qmr: false,
+  })
+  const [accessPoint, setAccessPoint] = useLocalStorage<{ [key in ConnectTargetType]: string }>('AccessPoint', {
+    busJig: '',
+    gl840: '',
+    sas: '',
+    powerSensor: '',
+    signalAnalyzer: '',
+    qdra: '',
+    qmr: '',
   })
 
   const initializeSetting = () => {
@@ -220,8 +229,10 @@ export const ConnectBox = () => {
   const checkConnection = async (action: 'connect' | 'disconnect', target: ConnectTargetType) => {
     if (setting?.success) {
       const apiUrl = setting.data.common.apiUrl
+      const params: ConnectParamsType = { accessPoint: accessPoint[target] }
       const response = await axios
         .get(`${apiUrl}/${CONNECT_ENDPOINT[target]}/${action}`, {
+          params: params,
           timeout: 5000,
         })
         .catch((e: AxiosError) => {
@@ -357,6 +368,18 @@ export const ConnectBox = () => {
                 DISCONNECT
               </Button>
               <BadgeSuccessBox isSuccess={isConnecting.busJig} successText="OPEN" failText="CLOSE" />
+              <Input
+                w="400px"
+                placeholder="Serial Port"
+                value={accessPoint.busJig}
+                onChange={(event) =>
+                  setAccessPoint((prev) => {
+                    const newObject = { ...prev }
+                    newObject.busJig = event.target.value
+                    return newObject
+                  })
+                }
+              />
             </HStack>
             <HStack spacing={4} w="100%">
               <Text w="200px" textAlign="center" fontSize="1.2em" fontWeight={600}>
@@ -379,6 +402,18 @@ export const ConnectBox = () => {
                 DISCONNECT
               </Button>
               <BadgeSuccessBox isSuccess={isConnecting.gl840} successText="OPEN" failText="CLOSE" />
+              <Input
+                w="400px"
+                placeholder="VISA Address"
+                value={accessPoint.gl840}
+                onChange={(event) =>
+                  setAccessPoint((prev) => {
+                    const newObject = { ...prev }
+                    newObject.gl840 = event.target.value
+                    return newObject
+                  })
+                }
+              />
             </HStack>
             <HStack spacing={4} w="100%">
               <Text w="200px" textAlign="center" fontSize="1.2em" fontWeight={600}>
@@ -401,6 +436,18 @@ export const ConnectBox = () => {
                 DISCONNECT
               </Button>
               <BadgeSuccessBox isSuccess={isConnecting.sas} successText="OPEN" failText="CLOSE" />
+              <Input
+                w="400px"
+                placeholder="Serial Port"
+                value={accessPoint.sas}
+                onChange={(event) =>
+                  setAccessPoint((prev) => {
+                    const newObject = { ...prev }
+                    newObject.sas = event.target.value
+                    return newObject
+                  })
+                }
+              />
             </HStack>
           </VStack>
           <VStack spacing={4}>
@@ -430,6 +477,18 @@ export const ConnectBox = () => {
                 DISCONNECT
               </Button>
               <BadgeSuccessBox isSuccess={isConnecting.powerSensor} successText="OPEN" failText="CLOSE" />
+              <Input
+                w="400px"
+                placeholder="VISA Address"
+                value={accessPoint.powerSensor}
+                onChange={(event) =>
+                  setAccessPoint((prev) => {
+                    const newObject = { ...prev }
+                    newObject.powerSensor = event.target.value
+                    return newObject
+                  })
+                }
+              />
             </HStack>
             <HStack spacing={4} w="100%">
               <Text w="200px" textAlign="center" fontSize="1.2em" fontWeight={600}>
@@ -452,6 +511,18 @@ export const ConnectBox = () => {
                 DISCONNECT
               </Button>
               <BadgeSuccessBox isSuccess={isConnecting.signalAnalyzer} successText="OPEN" failText="CLOSE" />
+              <Input
+                w="400px"
+                placeholder="VISA Address"
+                value={accessPoint.signalAnalyzer}
+                onChange={(event) =>
+                  setAccessPoint((prev) => {
+                    const newObject = { ...prev }
+                    newObject.signalAnalyzer = event.target.value
+                    return newObject
+                  })
+                }
+              />
             </HStack>
           </VStack>
           <VStack spacing={4}>
@@ -470,7 +541,7 @@ export const ConnectBox = () => {
                 onClick={() => checkConnection('connect', 'qdra')}
                 isDisabled={isConnecting.qdra}
               >
-                CONNECT
+                CHECK
               </Button>
               <BadgeSuccessBox isSuccess={isConnecting.qdra} successText="OPEN" failText="CLOSE" />
             </HStack>
@@ -484,7 +555,7 @@ export const ConnectBox = () => {
                 onClick={() => checkConnection('connect', 'qmr')}
                 isDisabled={isConnecting.qmr}
               >
-                CONNECT
+                CHECK
               </Button>
               <BadgeSuccessBox isSuccess={isConnecting.qmr} successText="OPEN" failText="CLOSE" />
             </HStack>

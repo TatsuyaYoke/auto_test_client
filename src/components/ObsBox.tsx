@@ -111,13 +111,24 @@ export const ObsBox = () => {
             return e + loss
           }),
         })
+      } else {
+        toast({
+          title: data.error,
+          status: 'error',
+          isClosable: true,
+        })
       }
+    } else {
+      toast({
+        title: 'Response data type is not correct',
+        status: 'error',
+        isClosable: true,
+      })
     }
     setIsObsLoading(false)
   }
 
   const reload = () => {
-    console.log('reload')
     if (powerSensorData) {
       const loss = parseInt(lossStr, 10)
       setGraphData({
