@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import {
   Box,
@@ -16,28 +16,110 @@ import {
   NumberDecrementStepper,
 } from '@chakra-ui/react'
 import axios from 'axios'
-import { useRecoilState, useRecoilValue } from 'recoil'
+import { useRecoilValue } from 'recoil'
 import { useLocalStorage } from 'usehooks-ts'
 
-import { projectSettingState, projectState, settingState } from '@atoms/SettingAtom'
+import { apiUrlState } from '@atoms/SettingAtom'
+import { BadgeSuccessBox } from '@parts'
+import { apiNoDataSchema } from '@types'
 
 export const BusBox = () => {
   const toast = useToast()
-  const [isLoading, setIsLoading] = useState(true)
-  const [setting, setSetting] = useRecoilState(settingState)
-  const [projectSetting, setProjectSetting] = useRecoilState(projectSettingState)
-  const [projectIndex, setProjectIndex] = useLocalStorage('ProjectIndex', 0)
-  const project = useRecoilValue(projectState)
+  const apiUrl = useRecoilValue(apiUrlState)
   const [vocStr, setVocStr] = useLocalStorage('VocStr', '50')
   const [iscStr, setIscStr] = useLocalStorage('IscStr', '0.1')
   const [fillFactorStr, setFillFactorStr] = useLocalStorage('FillFactorStr', '0.9')
   const [periodStr, setPeriodStr] = useLocalStorage('PeriodStr', '5400')
   const [sunRateStr, setSunRateStr] = useLocalStorage('SunRateStr', '0.6')
   const [OffsetStr, setOffsetStr] = useLocalStorage('OffsetStr', '0')
+  const [satStatus, setSatStatus] = useState(false)
+  const [recordStatus, setRecordStatus] = useState(false)
+
+  const changeSatStatus = async (modeEndPoint: 'satEna' | 'satDis') => {
+    if (!apiUrl) return
+
+    const response = await axios.get(`${apiUrl}/bus/busJig/${modeEndPoint}`).catch(() => ({
+      data: {
+        success: false,
+        error: 'Not exist: API',
+      },
+    }))
+    const schemaResult = apiNoDataSchema.safeParse(response.data)
+    if (schemaResult.success) {
+      if (!schemaResult.data.success) {
+        toast({
+          title: 'SAT Status change failed',
+          status: 'error',
+          isClosable: true,
+        })
+      } else if (modeEndPoint === 'satEna') {
+        setSatStatus(true)
+      } else {
+        setSatStatus(false)
+      }
+    }
+  }
+
+  const changeRecordStatus = async (modeEndPoint: 'recordStart' | 'recordStop') => {
+    if (!apiUrl) return
+
+    const response = await axios.get(`${apiUrl}/bus/gl840/${modeEndPoint}`).catch(() => ({
+      data: {
+        success: false,
+        error: 'Not exist: API',
+      },
+    }))
+    const schemaResult = apiNoDataSchema.safeParse(response.data)
+    if (schemaResult.success) {
+      if (!schemaResult.data.success) {
+        toast({
+          title: 'GL840 Record Status change failed',
+          status: 'error',
+          isClosable: true,
+        })
+      } else if (modeEndPoint === 'recordStart') {
+        setRecordStatus(true)
+      } else {
+        setRecordStatus(false)
+      }
+    }
+  }
 
   return (
     <Box h="100%">
       <VStack divider={<StackDivider />} spacing={4} align="stretch" mt="10px">
+        <VStack spacing={4}>
+          <Flex justifyContent="left" w="100%">
+            <Text fontSize="1.5em" fontWeight={600} borderBottom="solid 2px">
+              BUS JIG
+            </Text>
+          </Flex>
+          <HStack spacing={4} w="100%">
+            <Button width="150px" colorScheme="blue" onClick={() => changeSatStatus('satEna')}>
+              SAT ENA
+            </Button>
+            <Button width="150px" colorScheme="red" onClick={() => changeSatStatus('satDis')}>
+              SAT DIS
+            </Button>
+            <BadgeSuccessBox isSuccess={satStatus} successText="ENA" failText="DIS" />
+          </HStack>
+        </VStack>
+        <VStack spacing={4}>
+          <Flex justifyContent="left" w="100%">
+            <Text fontSize="1.5em" fontWeight={600} borderBottom="solid 2px">
+              GL840
+            </Text>
+          </Flex>
+          <HStack spacing={4} w="100%">
+            <Button width="150px" colorScheme="blue" onClick={() => changeRecordStatus('recordStart')}>
+              REC START
+            </Button>
+            <Button width="150px" colorScheme="red" onClick={() => changeRecordStatus('recordStop')}>
+              REC STOP
+            </Button>
+            <BadgeSuccessBox isSuccess={recordStatus} successText="REC" failText="STOP" />
+          </HStack>
+        </VStack>
         <VStack spacing={4}>
           <Flex justifyContent="left" w="100%">
             <Text fontSize="1.5em" fontWeight={600} borderBottom="solid 2px">

@@ -18,6 +18,11 @@ export const settingState = atom<ApiReturnType<AppSettingsType> | null>({
   default: null,
 })
 
+export const apiUrlState = atom<string | null>({
+  key: 'apiUrlState',
+  default: null,
+})
+
 export const projectSettingState = atom<PjSettingType | null>({
   key: 'projectSettingState',
   default: null,

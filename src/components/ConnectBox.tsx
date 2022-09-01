@@ -5,7 +5,7 @@ import axios from 'axios'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import { useLocalStorage } from 'usehooks-ts'
 
-import { projectSettingState, projectState, settingState } from '@atoms/SettingAtom'
+import { apiUrlState, projectSettingState, projectState, settingState } from '@atoms/SettingAtom'
 import { Error, ProjectSelect } from '@components'
 import { stringToSelectOption } from '@functions'
 import { BadgeSuccessBox } from '@parts'
@@ -49,11 +49,11 @@ const getPid = (
   })
 
 const CONNECT_ENDPOINT = {
-  busJig: 'bus/bus_jig',
+  busJig: 'bus/busJig',
   gl840: 'bus/gl840',
   sas: 'bus/sas',
-  powerSensor: 'obs/power_sensor',
-  signalAnalyzer: 'obs/signal_analyzer',
+  powerSensor: 'obs/powerSensor',
+  signalAnalyzer: 'obs/signalAnalyzer',
   qdra: 'trans/qdra',
   qmr: 'trans/qmr',
 } as const
@@ -66,6 +66,7 @@ export const ConnectBox = () => {
   const [isLoadingApi, setIsLoadingApi] = useState(false)
   const [pidList, setPidList] = useState<number[]>([])
   const [setting, setSetting] = useRecoilState(settingState)
+  const [apiUrl, setApiUrl] = useRecoilState(apiUrlState)
   const [projectSetting, setProjectSetting] = useRecoilState(projectSettingState)
   const [projectIndex, setProjectIndex] = useLocalStorage('ProjectIndex', 0)
   const project = useRecoilValue(projectState)
@@ -110,9 +111,9 @@ export const ConnectBox = () => {
     setIsLoading(false)
   }
 
-  const makeDir = async (apiUrl: string, saveDirPath: string, projectValue: string) => {
+  const makeDir = async (apiUrlCopy: string, saveDirPath: string, projectValue: string) => {
     const responseObs = await axios
-      .get(`${apiUrl}/obs/common/makeDir`, {
+      .get(`${apiUrlCopy}/obs/common/makeDir`, {
         params: {
           pathStr: saveDirPath,
           project: projectValue,
@@ -136,7 +137,7 @@ export const ConnectBox = () => {
     }
 
     const responseTrans = await axios
-      .get(`${apiUrl}/trans/common/makeDir`, {
+      .get(`${apiUrlCopy}/trans/common/makeDir`, {
         params: {
           pathStr: saveDirPath,
           project: projectValue,
@@ -173,11 +174,22 @@ export const ConnectBox = () => {
     }
 
     setIsLoadingApi(true)
-    const apiUrl = setting.data.common.apiUrl
+    const apiUrlCopy = setting.data.common.apiUrl
+    setApiUrl(apiUrlCopy)
     const waitSec = setting.data.common.waitSecApiStartup
     const saveDirPath = setting.data.common.saveDirPath
     const projectValue = project?.value
-    const response = await getPid(apiUrl, waitSec)
+    if (!apiUrlCopy) {
+      toast({
+        title: 'API URL not defined',
+        status: 'error',
+        isClosable: true,
+      })
+      setIsLoadingApi(false)
+      return
+    }
+
+    const response = await getPid(apiUrlCopy, waitSec)
     if (!projectValue) {
       toast({
         title: 'Project not defined',
@@ -206,7 +218,7 @@ export const ConnectBox = () => {
       setIsLoadingApi(false)
       return
     }
-    makeDir(apiUrl, saveDirPath, projectValue)
+    makeDir(apiUrlCopy, saveDirPath, projectValue)
     setPidList(data)
     setIsWorkingApi(true)
     setIsLoadingApi(false)
@@ -228,7 +240,6 @@ export const ConnectBox = () => {
 
   const checkConnection = async (action: 'connect' | 'disconnect', target: ConnectTargetType) => {
     if (setting?.success) {
-      const apiUrl = setting.data.common.apiUrl
       const params: ConnectParamsType = { accessPoint: accessPoint[target] }
       const response = await axios
         .get(`${apiUrl}/${CONNECT_ENDPOINT[target]}/${action}`, {
@@ -535,29 +546,43 @@ export const ConnectBox = () => {
               <Text w="200px" textAlign="center" fontSize="1.2em" fontWeight={600}>
                 qDRA
               </Text>
-              <Button
-                width="150px"
-                colorScheme="teal"
-                onClick={() => checkConnection('connect', 'qdra')}
-                isDisabled={isConnecting.qdra}
-              >
+              <Button width="150px" colorScheme="teal" onClick={() => checkConnection('connect', 'qdra')}>
                 CHECK
               </Button>
               <BadgeSuccessBox isSuccess={isConnecting.qdra} successText="OPEN" failText="CLOSE" />
+              <Input
+                w="400px"
+                placeholder="IP Address"
+                value={accessPoint.qdra}
+                onChange={(event) =>
+                  setAccessPoint((prev) => {
+                    const newObject = { ...prev }
+                    newObject.qdra = event.target.value
+                    return newObject
+                  })
+                }
+              />
             </HStack>
             <HStack spacing={4} w="100%">
               <Text w="200px" textAlign="center" fontSize="1.2em" fontWeight={600}>
                 qMR
               </Text>
-              <Button
-                width="150px"
-                colorScheme="teal"
-                onClick={() => checkConnection('connect', 'qmr')}
-                isDisabled={isConnecting.qmr}
-              >
+              <Button width="150px" colorScheme="teal" onClick={() => checkConnection('connect', 'qmr')}>
                 CHECK
               </Button>
               <BadgeSuccessBox isSuccess={isConnecting.qmr} successText="OPEN" failText="CLOSE" />
+              <Input
+                w="400px"
+                placeholder="IP Address"
+                value={accessPoint.qmr}
+                onChange={(event) =>
+                  setAccessPoint((prev) => {
+                    const newObject = { ...prev }
+                    newObject.qmr = event.target.value
+                    return newObject
+                  })
+                }
+              />
             </HStack>
           </VStack>
         </VStack>

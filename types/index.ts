@@ -87,6 +87,13 @@ export type ConnectParamsType = {
   accessPoint: string
 }
 
+export const apiNoDataSchema = z.union([
+  z.object({
+    success: z.literal(true),
+  }),
+  errorSchema,
+])
+
 export const apiDataStringSchema = z.union([
   z.object({
     success: z.literal(true),
