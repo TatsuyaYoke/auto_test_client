@@ -239,7 +239,7 @@ export const ConnectBox = () => {
   }
 
   const checkConnection = async (action: 'connect' | 'disconnect', target: ConnectTargetType) => {
-    if (setting?.success) {
+    if (apiUrl) {
       const params: ConnectParamsType = { accessPoint: accessPoint[target] }
       const response = await axios
         .get(`${apiUrl}/${CONNECT_ENDPOINT[target]}/${action}`, {
@@ -283,6 +283,12 @@ export const ConnectBox = () => {
         })
       }
       setIsLoadingApi(false)
+    } else {
+      toast({
+        title: 'API not start',
+        status: 'error',
+        isClosable: true,
+      })
     }
   }
 

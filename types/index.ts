@@ -139,3 +139,20 @@ export type ArrayObjectDataType = ObjectDataType[]
 export type ObjectArrayDataType = {
   [key: string]: DataType[]
 }
+
+export type TransRecordStartParamsType = {
+  sessionName: string
+  duration: number
+}
+
+export type TransProcessingParamsType = {
+  sessionName: string
+  pathStr: string
+  pathScriptStr: string
+}
+
+export type TransGetDataParamsType = {
+  sessionName: string
+  pathStr: string
+  deleteFlag: boolean
+}
