@@ -37,55 +37,57 @@ export const TransBox = () => {
   const { width } = useWindowSize()
 
   const record = async () => {
-    if (apiUrl) {
-      const duration = parseInt(recordDurationStr, 10)
-      if (Number.isNaN(duration)) {
-        toast({
-          title: 'Record duration setting is not correct',
-          status: 'error',
-          isClosable: true,
-        })
-        return
-      }
+    if (!apiUrl) {
+      toast({
+        title: 'Response data type is not correct',
+        status: 'error',
+        isClosable: true,
+      })
+      return
+    }
 
-      const sessionNameCopy = `${testName}-${uuid4()}`
-      setSessionName(sessionNameCopy)
-      const params: TransRecordStartParamsType = { sessionName: sessionNameCopy, duration: duration }
-      const response = await axios
-        .get(`${apiUrl}/trans/qdra/recordStart`, {
-          params: params,
-        })
-        .catch(() => ({
-          data: {
-            success: false,
-            error: 'Not exist: API',
-          },
-        }))
+    const duration = parseInt(recordDurationStr, 10)
+    if (Number.isNaN(duration)) {
+      toast({
+        title: 'Record duration setting is not correct',
+        status: 'error',
+        isClosable: true,
+      })
+      return
+    }
 
-      const schemaResult = apiNoDataSchema.safeParse(response.data)
-      if (schemaResult.success) {
-        const data = schemaResult.data
-        if (data.success) {
-          setIsRecording(true)
-          setTimeout(() => {
-            setIsRecording(false)
-          }, duration * 1000)
-        } else {
-          toast({
-            title: data.error,
-            status: 'error',
-            isClosable: true,
-          })
-        }
+    const sessionNameCopy = `${testName}-${uuid4()}`
+    setSessionName(sessionNameCopy)
+    const params: TransRecordStartParamsType = { sessionName: sessionNameCopy, duration: duration }
+    const response = await axios
+      .get(`${apiUrl}/trans/qdra/recordStart`, {
+        params: params,
+      })
+      .catch(() => ({
+        data: {
+          success: false,
+          error: 'Not exist: API',
+        },
+      }))
+
+    const schemaResult = apiNoDataSchema.safeParse(response.data)
+    if (schemaResult.success) {
+      const data = schemaResult.data
+      if (data.success) {
+        setIsRecording(true)
+        setTimeout(() => {
+          setIsRecording(false)
+        }, duration * 1000)
       } else {
         toast({
-          title: 'Response data type is not correct',
+          title: data.error,
           status: 'error',
           isClosable: true,
         })
       }
     }
   }
+
   const processing = async () => {
     console.log('Processing')
   }

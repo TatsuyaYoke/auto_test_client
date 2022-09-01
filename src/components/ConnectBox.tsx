@@ -239,57 +239,59 @@ export const ConnectBox = () => {
   }
 
   const checkConnection = async (action: 'connect' | 'disconnect', target: ConnectTargetType) => {
-    if (apiUrl) {
-      const params: ConnectParamsType = { accessPoint: accessPoint[target] }
-      const response = await axios
-        .get(`${apiUrl}/${CONNECT_ENDPOINT[target]}/${action}`, {
-          params: params,
-          timeout: 5000,
-        })
-        .catch((e: AxiosError) => {
-          let errorMessage = `(${target}) Not exist: API`
-          if (e.message.indexOf('timeout') !== -1) {
-            errorMessage = `(${target}) Timeout error`
-          }
-
-          return {
-            data: {
-              success: false,
-              error: errorMessage,
-            },
-          }
-        })
-      const schemaResult = connectSchema.safeParse(response.data)
-      if (schemaResult.success) {
-        const data = schemaResult.data
-        if (data.success) {
-          setIsConnecting((prev) => {
-            const newObject = { ...prev }
-            newObject[target] = data.isOpen
-            return newObject
-          })
-        } else {
-          toast({
-            title: `(${target}) ${data.error}`,
-            status: 'error',
-            isClosable: true,
-          })
-        }
-      } else {
-        toast({
-          title: `(${target}) Response data type is not correct`,
-          status: 'error',
-          isClosable: true,
-        })
-      }
-      setIsLoadingApi(false)
-    } else {
+    if (!apiUrl) {
       toast({
         title: 'API not start',
         status: 'error',
         isClosable: true,
       })
+      return
     }
+
+    const params: ConnectParamsType = { accessPoint: accessPoint[target] }
+    const response = await axios
+      .get(`${apiUrl}/${CONNECT_ENDPOINT[target]}/${action}`, {
+        params: params,
+        timeout: 5000,
+      })
+      .catch((e: AxiosError) => {
+        let errorMessage = `(${target}) Not exist: API`
+        if (e.message.indexOf('timeout') !== -1) {
+          errorMessage = `(${target}) Timeout error`
+        }
+
+        return {
+          data: {
+            success: false,
+            error: errorMessage,
+          },
+        }
+      })
+
+    const schemaResult = connectSchema.safeParse(response.data)
+    if (!schemaResult.success) {
+      toast({
+        title: `(${target}) Response data type is not correct`,
+        status: 'error',
+        isClosable: true,
+      })
+      return
+    }
+
+    const data = schemaResult.data
+    if (!data.success) {
+      toast({
+        title: `(${target}) ${data.error}`,
+        status: 'error',
+        isClosable: true,
+      })
+      return
+    }
+    setIsConnecting((prev) => {
+      const newObject = { ...prev }
+      newObject[target] = data.isOpen
+      return newObject
+    })
   }
 
   const checkAll = () => {
