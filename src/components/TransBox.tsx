@@ -39,7 +39,7 @@ export const TransBox = () => {
   const record = async () => {
     if (!apiUrl) {
       toast({
-        title: 'Response data type is not correct',
+        title: 'API not start',
         status: 'error',
         isClosable: true,
       })
@@ -71,20 +71,26 @@ export const TransBox = () => {
       }))
 
     const schemaResult = apiNoDataSchema.safeParse(response.data)
-    if (schemaResult.success) {
-      const data = schemaResult.data
-      if (data.success) {
-        setIsRecording(true)
-        setTimeout(() => {
-          setIsRecording(false)
-        }, duration * 1000)
-      } else {
-        toast({
-          title: data.error,
-          status: 'error',
-          isClosable: true,
-        })
-      }
+    if (!schemaResult.success) {
+      toast({
+        title: 'Response data type is not correct',
+        status: 'error',
+        isClosable: true,
+      })
+      return
+    }
+    const data = schemaResult.data
+    if (data.success) {
+      setIsRecording(true)
+      setTimeout(() => {
+        setIsRecording(false)
+      }, duration * 1000)
+    } else {
+      toast({
+        title: data.error,
+        status: 'error',
+        isClosable: true,
+      })
     }
   }
 
@@ -93,7 +99,14 @@ export const TransBox = () => {
   }
 
   const changeModcod = async (modeEndPoint: '8psk_2_3 ' | '8psk_5_6') => {
-    if (!apiUrl) return
+    if (!apiUrl) {
+      toast({
+        title: 'API not start',
+        status: 'error',
+        isClosable: true,
+      })
+      return
+    }
 
     const response = await axios.get(`${apiUrl}/trans/qmr/${modeEndPoint}`).catch(() => ({
       data: {
@@ -102,18 +115,25 @@ export const TransBox = () => {
       },
     }))
     const schemaResult = apiNoDataSchema.safeParse(response.data)
-    if (schemaResult.success) {
-      if (!schemaResult.data.success) {
-        toast({
-          title: 'qMR mode change failed',
-          status: 'error',
-          isClosable: true,
-        })
-      } else if (modeEndPoint === '8psk_2_3 ') {
-        setQmrStatus(true)
-      } else {
-        setQmrStatus(false)
-      }
+    if (!schemaResult.success) {
+      toast({
+        title: 'Response data type is not correct',
+        status: 'error',
+        isClosable: true,
+      })
+      return
+    }
+
+    if (!schemaResult.data.success) {
+      toast({
+        title: 'qMR mode change failed',
+        status: 'error',
+        isClosable: true,
+      })
+    } else if (modeEndPoint === '8psk_2_3 ') {
+      setQmrStatus(true)
+    } else {
+      setQmrStatus(false)
     }
   }
 

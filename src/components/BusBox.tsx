@@ -36,7 +36,14 @@ export const BusBox = () => {
   const [recordStatus, setRecordStatus] = useState(false)
 
   const changeSatStatus = async (modeEndPoint: 'satEna' | 'satDis') => {
-    if (!apiUrl) return
+    if (!apiUrl) {
+      toast({
+        title: 'API not start',
+        status: 'error',
+        isClosable: true,
+      })
+      return
+    }
 
     const response = await axios.get(`${apiUrl}/bus/busJig/${modeEndPoint}`).catch(() => ({
       data: {
@@ -44,24 +51,39 @@ export const BusBox = () => {
         error: 'Not exist: API',
       },
     }))
+
     const schemaResult = apiNoDataSchema.safeParse(response.data)
-    if (schemaResult.success) {
-      if (!schemaResult.data.success) {
-        toast({
-          title: 'SAT Status change failed',
-          status: 'error',
-          isClosable: true,
-        })
-      } else if (modeEndPoint === 'satEna') {
-        setSatStatus(true)
-      } else {
-        setSatStatus(false)
-      }
+    if (!schemaResult.success) {
+      toast({
+        title: 'Response data type is not correct',
+        status: 'error',
+        isClosable: true,
+      })
+      return
+    }
+
+    if (!schemaResult.data.success) {
+      toast({
+        title: 'SAT Status change failed',
+        status: 'error',
+        isClosable: true,
+      })
+    } else if (modeEndPoint === 'satEna') {
+      setSatStatus(true)
+    } else {
+      setSatStatus(false)
     }
   }
 
   const changeRecordStatus = async (modeEndPoint: 'recordStart' | 'recordStop') => {
-    if (!apiUrl) return
+    if (!apiUrl) {
+      toast({
+        title: 'API not start',
+        status: 'error',
+        isClosable: true,
+      })
+      return
+    }
 
     const response = await axios.get(`${apiUrl}/bus/gl840/${modeEndPoint}`).catch(() => ({
       data: {
@@ -70,18 +92,25 @@ export const BusBox = () => {
       },
     }))
     const schemaResult = apiNoDataSchema.safeParse(response.data)
-    if (schemaResult.success) {
-      if (!schemaResult.data.success) {
-        toast({
-          title: 'GL840 Record Status change failed',
-          status: 'error',
-          isClosable: true,
-        })
-      } else if (modeEndPoint === 'recordStart') {
-        setRecordStatus(true)
-      } else {
-        setRecordStatus(false)
-      }
+    if (!schemaResult.success) {
+      toast({
+        title: 'Response data type is not correct',
+        status: 'error',
+        isClosable: true,
+      })
+      return
+    }
+
+    if (!schemaResult.data.success) {
+      toast({
+        title: 'GL840 Record Status change failed',
+        status: 'error',
+        isClosable: true,
+      })
+    } else if (modeEndPoint === 'recordStart') {
+      setRecordStatus(true)
+    } else {
+      setRecordStatus(false)
     }
   }
 
