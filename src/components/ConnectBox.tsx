@@ -307,11 +307,16 @@ export const ConnectBox = () => {
 
   return (
     <Box h="100%">
+    <HStack>
       <Error
         isError={!setting?.success ?? false}
         successMessage="Setting Success"
         errorMessage={!setting?.success ? setting?.error : ''}
       />
+      <Button width="150px" colorScheme="teal" onClick={initializeSetting}>
+        RECONNECT
+      </Button>
+      </HStack>
       {setting?.success && (
         <VStack divider={<StackDivider />} spacing={4} align="stretch" mt="10px">
           <VStack spacing={4}>

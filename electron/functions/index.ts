@@ -29,12 +29,12 @@ export const resolvePathGDrive = (path: string): string | null => resolvePath(pa
 
 const TOP_PATH_STR = 'G:/Shared drives/0705_Sat_Dev_Tlm'
 const TOP_PATH = resolvePathGDrive(TOP_PATH_STR)
-const SETTING_PATH = resolvePathGDrive(join(TOP_PATH_STR, 'settings/auto-test.json'))
 
 export const getSettings = (): ApiReturnType<AppSettingsType> => {
   if (!TOP_PATH) return { success: false, error: 'Cannot connect GDrive' } as const
-  if (!SETTING_PATH) return { success: false, error: 'Not found project setting file' } as const
-  const settingsBeforeParse = JSON.parse(fs.readFileSync(SETTING_PATH, 'utf8'))
+  const settingPath = resolvePathGDrive(join(TOP_PATH_STR, 'settings/auto-test.json'))
+  if (!settingPath) return { success: false, error: 'Not found project setting file' } as const
+  const settingsBeforeParse = JSON.parse(fs.readFileSync(settingPath, 'utf8'))
   const schemaResult = appSettingsSchema.safeParse(settingsBeforeParse)
   if (!schemaResult.success) return { success: false, error: 'Cannot parse project setting file correctly' } as const
   if (!fs.existsSync(schemaResult.data.common.apiPath))
