@@ -56,6 +56,15 @@ export const TransBox = () => {
       return
     }
 
+    if (qmrStatus === null) {
+      toast({
+        title: 'qMR not set',
+        status: 'error',
+        isClosable: true,
+      })
+      return
+    }
+
     const sessionNameCopy = `${testName}-${uuid4()}`
     setSessionName(sessionNameCopy)
     const params: TransRecordStartParamsType = { sessionName: sessionNameCopy, duration: duration }

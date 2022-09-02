@@ -28,7 +28,11 @@ export const ObsBox = () => {
   const setting = useRecoilValue(settingState)
   const [testName, setTestName] = useRecoilState(testNameState)
   const [powerSensorData, setPowerSensorData] = useState<PowerSensorDataType | null>(null)
-  const [graphData, setGraphData] = useState<GraphDataType | null>(null)
+  const [graphData, setGraphData] = useState<GraphDataType>({
+    name: 'power',
+    x: [],
+    y: [],
+  })
   const [lossStr, setLossStr] = useLocalStorage('LossStr', '0')
   const [obsDurationStr, setObsDurationStr] = useLocalStorage('ObsDurationStr', '10')
   const [warmUpDurationStr, setWarmUpDurationStr] = useLocalStorage('WarmUpDurationStr', '15')
@@ -212,15 +216,13 @@ export const ObsBox = () => {
           </Button>
         </HStack>
         <Flex justifyContent="center" w="100%">
-          {graphData && (
-            <MyPlot
-              graphData={[graphData]}
-              graphWidth={width * 0.8}
-              graphHeight={height * 0.8}
-              mode="lines+markers"
-              showlegend={false}
-            />
-          )}
+          <MyPlot
+            graphData={[graphData]}
+            graphWidth={width * 0.8}
+            graphHeight={height * 0.8}
+            mode="lines+markers"
+            showlegend={false}
+          />
         </Flex>
       </VStack>
     </Box>
