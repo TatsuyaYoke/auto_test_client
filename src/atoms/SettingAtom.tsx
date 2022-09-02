@@ -32,3 +32,8 @@ export const testNameState = atom<string>({
   key: 'testNameState',
   default: '',
 })
+
+export const pidListState = atom<number[]>({
+  key: 'pidListState',
+  default: [],
+})

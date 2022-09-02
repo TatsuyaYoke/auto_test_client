@@ -1,7 +1,7 @@
 import { Flex, Spacer, Text, Box, useColorModeValue } from '@chakra-ui/react'
-import { useRecoilState } from 'recoil'
+import { useRecoilState, useRecoilValue } from 'recoil'
 
-import { isMaximizeState } from '@atoms/SettingAtom'
+import { isMaximizeState, pidListState } from '@atoms/SettingAtom'
 
 type Props = {
   height: number | string
@@ -11,6 +11,7 @@ export const AppBar = (props: Props) => {
   const { height } = props
   const [isMaximize, setIsMaximize] = useRecoilState(isMaximizeState)
   const bgColor = useColorModeValue('gray.200', 'gray.600')
+  const pidList = useRecoilValue(pidListState)
 
   const handleToggle = () => {
     if (isMaximize) {
@@ -51,7 +52,10 @@ export const AppBar = (props: Props) => {
       </Box>
       <Box
         as="button"
-        onClick={window.Main.Close}
+        onClick={() => {
+          window.Main.stopApi(pidList)
+          window.Main.Close()
+        }}
         borderRadius={0}
         h="inherit"
         px={5}

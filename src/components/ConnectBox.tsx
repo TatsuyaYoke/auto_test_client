@@ -5,7 +5,7 @@ import axios from 'axios'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import { useLocalStorage } from 'usehooks-ts'
 
-import { apiUrlState, projectSettingState, projectState, settingState } from '@atoms/SettingAtom'
+import { apiUrlState, pidListState, projectSettingState, projectState, settingState } from '@atoms/SettingAtom'
 import { Error, ProjectSelect } from '@components'
 import { stringToSelectOption } from '@functions'
 import { BadgeSuccessBox } from '@parts'
@@ -64,7 +64,7 @@ export const ConnectBox = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [isWorkingApi, setIsWorkingApi] = useState(false)
   const [isLoadingApi, setIsLoadingApi] = useState(false)
-  const [pidList, setPidList] = useState<number[]>([])
+  const [pidList, setPidList] = useRecoilState(pidListState)
   const [setting, setSetting] = useRecoilState(settingState)
   const [apiUrl, setApiUrl] = useRecoilState(apiUrlState)
   const [projectSetting, setProjectSetting] = useRecoilState(projectSettingState)
