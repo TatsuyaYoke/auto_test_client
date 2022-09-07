@@ -71,6 +71,7 @@ export const ConnectBox = () => {
   const [projectIndex, setProjectIndex] = useLocalStorage('ProjectIndex', 0)
   const project = useRecoilValue(projectState)
   const [projectOptionList, setProjectOptionList] = useState<SelectOptionType[]>([])
+  const [saveDirPath, setSaveDirPath] = useLocalStorage('SaveDirPath', '')
 
   const [isConnecting, setIsConnecting] = useState<{ [key in ConnectTargetType]: boolean }>({
     busJig: false,
@@ -111,7 +112,7 @@ export const ConnectBox = () => {
     setIsLoading(false)
   }
 
-  const makeDir = async (apiUrlCopy: string, saveDirPath: string, projectValue: string) => {
+  const makeDir = async (apiUrlCopy: string, projectValue: string) => {
     const responseObs = await axios
       .get(`${apiUrlCopy}/obs/common/makeDir`, {
         params: {
@@ -131,6 +132,12 @@ export const ConnectBox = () => {
         toast({
           title: 'Cannot make dir for obs',
           status: 'error',
+          isClosable: true,
+        })
+      } else {
+        toast({
+          title: 'Make dir successfully for obs',
+          status: 'success',
           isClosable: true,
         })
       }
@@ -157,6 +164,12 @@ export const ConnectBox = () => {
           status: 'error',
           isClosable: true,
         })
+      } else {
+        toast({
+          title: 'Make dir successfully for trans',
+          status: 'success',
+          isClosable: true,
+        })
       }
     }
   }
@@ -177,7 +190,6 @@ export const ConnectBox = () => {
     const apiUrlCopy = setting.data.common.apiUrl
     setApiUrl(apiUrlCopy)
     const waitSec = setting.data.common.waitSecApiStartup
-    const saveDirPath = setting.data.common.saveDirPath
     const projectValue = project?.value
     if (!apiUrlCopy) {
       toast({
@@ -218,7 +230,7 @@ export const ConnectBox = () => {
       setIsLoadingApi(false)
       return
     }
-    makeDir(apiUrlCopy, saveDirPath, projectValue)
+    makeDir(apiUrlCopy, projectValue)
     setPidList(data)
     setIsWorkingApi(true)
     setIsLoadingApi(false)
@@ -336,6 +348,30 @@ export const ConnectBox = () => {
                   width="200px"
                 />
               )}
+              <Text>Save dir path</Text>
+              <Input
+                w="800px"
+                placeholder="path"
+                value={saveDirPath}
+                onChange={(event) => setSaveDirPath(event.target.value)}
+              />
+              <Button
+                width="150px"
+                colorScheme="teal"
+                onClick={() => {
+                  if (apiUrl && project) {
+                    makeDir(apiUrl, project.value)
+                  } else {
+                    toast({
+                      title: 'API not start',
+                      status: 'error',
+                      isClosable: true,
+                    })
+                  }
+                }}
+              >
+                MAKE
+              </Button>
             </HStack>
             <HStack spacing={4} w="100%">
               <Text w="100px" textAlign="center" fontSize="1.2em" fontWeight={600}>

@@ -15,6 +15,7 @@ import {
 import axios from 'axios'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import { useLocalStorage, useWindowSize } from 'usehooks-ts'
+import { v4 as uuid4 } from 'uuid'
 
 import { apiUrlState, testNameState } from '@atoms/SettingAtom'
 import { MyPlot } from '@parts'
@@ -89,7 +90,7 @@ export const ObsBox = () => {
 
     setIsObsLoading(true)
     const params: StartObsParamsType = {
-      testName: testName,
+      testName: `${testName}-${uuid4()}`,
       obsDuration: obsDuration,
       warmUpDuration: warmUpDuration,
       holdDuration: holdDuration,
@@ -242,7 +243,7 @@ export const ObsBox = () => {
           <MyPlot
             graphData={[graphData]}
             graphWidth={width * 0.8}
-            graphHeight={height * 0.8}
+            graphHeight={height * 0.75}
             mode="lines+markers"
             showlegend={false}
           />
