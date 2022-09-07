@@ -102,6 +102,26 @@ export const apiDataStringSchema = z.union([
   errorSchema,
 ])
 
+export type SasOnParamsType = {
+  voc: number
+  isc: number
+  fillFactor: number
+}
+
+export type SasRepeatOnParamsType = SasOnParamsType & {
+  orbitPeriod: number
+  sunRate: number
+  offset: number
+}
+
+export const onSchema = z.union([
+  z.object({
+    success: z.literal(true),
+    isOn: z.boolean(),
+  }),
+  errorSchema,
+])
+
 export type StartObsParamsType = {
   testName: string
   obsDuration: number
@@ -150,6 +170,15 @@ export type TransProcessingParamsType = {
   pathStr: string
   pathScriptStr: string
 }
+
+export const processingReturnSchema = z.union([
+  z.object({
+    success: z.literal(true),
+    stdout: z.string(),
+    stderr: z.string(),
+  }),
+  errorSchema,
+])
 
 export type TransGetDataParamsType = {
   sessionName: string

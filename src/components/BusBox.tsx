@@ -21,7 +21,9 @@ import { useLocalStorage } from 'usehooks-ts'
 
 import { apiUrlState } from '@atoms/SettingAtom'
 import { BadgeSuccessBox } from '@parts'
-import { apiNoDataSchema } from '@types'
+import { apiNoDataSchema, onSchema } from '@types'
+
+import type { SasOnParamsType, SasRepeatOnParamsType } from '@types'
 
 export const BusBox = () => {
   const toast = useToast()
@@ -31,9 +33,11 @@ export const BusBox = () => {
   const [fillFactorStr, setFillFactorStr] = useLocalStorage('FillFactorStr', '0.9')
   const [periodStr, setPeriodStr] = useLocalStorage('PeriodStr', '5400')
   const [sunRateStr, setSunRateStr] = useLocalStorage('SunRateStr', '0.6')
-  const [OffsetStr, setOffsetStr] = useLocalStorage('OffsetStr', '0')
+  const [offsetStr, setOffsetStr] = useLocalStorage('OffsetStr', '0')
   const [satStatus, setSatStatus] = useState(false)
   const [recordStatus, setRecordStatus] = useState(false)
+  const [isOnSas, setIsOnSas] = useState(false)
+  const [isOnSasRepeat, setIsOnSasRepeat] = useState(false)
 
   const changeSatStatus = async (modeEndPoint: 'satEna' | 'satDis') => {
     if (!apiUrl) {
@@ -111,6 +115,237 @@ export const BusBox = () => {
       setRecordStatus(true)
     } else {
       setRecordStatus(false)
+    }
+  }
+
+  const sasOn = async () => {
+    if (!apiUrl) {
+      toast({
+        title: 'API not start',
+        status: 'error',
+        isClosable: true,
+      })
+      return
+    }
+
+    const voc = parseFloat(vocStr)
+    const isc = parseFloat(iscStr)
+    const fillFactor = parseFloat(fillFactorStr)
+    if (Number.isNaN(voc)) {
+      toast({
+        title: 'Voc setting is not correct',
+        status: 'error',
+        isClosable: true,
+      })
+      return
+    }
+    if (Number.isNaN(isc)) {
+      toast({
+        title: 'Isc setting is not correct',
+        status: 'error',
+        isClosable: true,
+      })
+      return
+    }
+    if (Number.isNaN(fillFactor)) {
+      toast({
+        title: 'F.F setting is not correct',
+        status: 'error',
+        isClosable: true,
+      })
+      return
+    }
+
+    const params: SasOnParamsType = {
+      voc: voc,
+      isc: isc,
+      fillFactor: fillFactor,
+    }
+    const response = await axios
+      .get(`${apiUrl}/bus/sas/on`, {
+        params: params,
+      })
+      .catch(() => ({
+        data: {
+          success: false,
+          error: 'Not exist: API',
+        },
+      }))
+
+    const schemaResult = onSchema.safeParse(response.data)
+    if (!schemaResult.success) {
+      toast({
+        title: 'Response data type is not correct',
+        status: 'error',
+        isClosable: true,
+      })
+      return
+    }
+    const data = schemaResult.data
+    if (data.success) {
+      if (data.isOn) {
+        setIsOnSas(true)
+      } else {
+        setIsOnSas(false)
+      }
+    } else {
+      toast({
+        title: data.error,
+        status: 'error',
+        isClosable: true,
+      })
+    }
+  }
+
+  const sasRepeatOn = async () => {
+    if (!apiUrl) {
+      toast({
+        title: 'API not start',
+        status: 'error',
+        isClosable: true,
+      })
+      return
+    }
+
+    const voc = parseFloat(vocStr)
+    const isc = parseFloat(iscStr)
+    const fillFactor = parseFloat(fillFactorStr)
+    const orbitPeriod = parseInt(periodStr, 10)
+    const sunRate = parseFloat(sunRateStr)
+    const offset = parseInt(offsetStr, 10)
+    if (Number.isNaN(voc)) {
+      toast({
+        title: 'Voc setting is not correct',
+        status: 'error',
+        isClosable: true,
+      })
+      return
+    }
+    if (Number.isNaN(isc)) {
+      toast({
+        title: 'Isc setting is not correct',
+        status: 'error',
+        isClosable: true,
+      })
+      return
+    }
+    if (Number.isNaN(fillFactor)) {
+      toast({
+        title: 'F.F setting is not correct',
+        status: 'error',
+        isClosable: true,
+      })
+      return
+    }
+    if (Number.isNaN(orbitPeriod)) {
+      toast({
+        title: 'Period setting is not correct',
+        status: 'error',
+        isClosable: true,
+      })
+      return
+    }
+    if (Number.isNaN(sunRate)) {
+      toast({
+        title: 'Sun rate setting is not correct',
+        status: 'error',
+        isClosable: true,
+      })
+      return
+    }
+    if (Number.isNaN(offset)) {
+      toast({
+        title: 'Offset setting is not correct',
+        status: 'error',
+        isClosable: true,
+      })
+      return
+    }
+
+    const params: SasRepeatOnParamsType = {
+      voc: voc,
+      isc: isc,
+      fillFactor: fillFactor,
+      orbitPeriod: orbitPeriod,
+      sunRate: sunRate,
+      offset: offset,
+    }
+    const response = await axios
+      .get(`${apiUrl}/bus/sas/repeatOn`, {
+        params: params,
+      })
+      .catch(() => ({
+        data: {
+          success: false,
+          error: 'Not exist: API',
+        },
+      }))
+
+    const schemaResult = onSchema.safeParse(response.data)
+    if (!schemaResult.success) {
+      toast({
+        title: 'Response data type is not correct',
+        status: 'error',
+        isClosable: true,
+      })
+      return
+    }
+    const data = schemaResult.data
+    if (data.success) {
+      if (data.isOn) {
+        setIsOnSas(true)
+        setIsOnSasRepeat(true)
+      } else {
+        setIsOnSas(false)
+        setIsOnSasRepeat(false)
+      }
+    } else {
+      toast({
+        title: data.error,
+        status: 'error',
+        isClosable: true,
+      })
+    }
+  }
+
+  const sasOff = async () => {
+    if (!apiUrl) {
+      toast({
+        title: 'API not start',
+        status: 'error',
+        isClosable: true,
+      })
+      return
+    }
+
+    const response = await axios.get(`${apiUrl}/bus/sas/off`).catch(() => ({
+      data: {
+        success: false,
+        error: 'Not exist: API',
+      },
+    }))
+
+    const schemaResult = onSchema.safeParse(response.data)
+    if (!schemaResult.success) {
+      toast({
+        title: 'Response data type is not correct',
+        status: 'error',
+        isClosable: true,
+      })
+      return
+    }
+    const data = schemaResult.data
+    if (data.success) {
+      if (!data.isOn) {
+        setIsOnSas(false)
+        setIsOnSasRepeat(false)
+      }
+    } else {
+      toast({
+        title: data.error,
+        status: 'error',
+        isClosable: true,
+      })
     }
   }
 
@@ -211,7 +446,7 @@ export const BusBox = () => {
             <Text textAlign="center" w="80px">
               Offset
             </Text>
-            <NumberInput w="150px" step={60} min={0} max={6000} value={OffsetStr} onChange={setOffsetStr}>
+            <NumberInput w="150px" step={60} min={0} max={6000} value={offsetStr} onChange={setOffsetStr}>
               <NumberInputField placeholder="Offset [sec]" />
               <NumberInputStepper>
                 <NumberIncrementStepper />
@@ -220,15 +455,21 @@ export const BusBox = () => {
             </NumberInput>
           </HStack>
           <HStack spacing={4} w="100%">
-            <Button width="150px" colorScheme="teal">
+            <Button width="150px" colorScheme="teal" isDisabled={isOnSas} onClick={sasOn}>
               ON
             </Button>
-            <Button width="150px" colorScheme="teal">
+            <Button width="150px" colorScheme="teal" isDisabled={isOnSas} onClick={sasRepeatOn}>
               REPEAT
             </Button>
-            <Button width="150px" colorScheme="teal">
+            <Button width="150px" colorScheme="teal" isDisabled={!isOnSas} onClick={sasOff}>
               STOP
             </Button>
+            <BadgeSuccessBox
+              isSuccess={isOnSas}
+              successText={isOnSasRepeat ? 'REPEAT' : 'ON'}
+              failText="OFF"
+              width="100px"
+            />
           </HStack>
         </VStack>
       </VStack>

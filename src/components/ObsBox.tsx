@@ -16,16 +16,17 @@ import axios from 'axios'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import { useLocalStorage, useWindowSize } from 'usehooks-ts'
 
-import { settingState, testNameState } from '@atoms/SettingAtom'
+import { apiUrlState, testNameState } from '@atoms/SettingAtom'
 import { MyPlot } from '@parts'
 import { startObsReturnSchema } from '@types'
 
 import type { StartObsParamsType, GraphDataType, PowerSensorDataType } from '@types'
+import type { AxiosError } from 'axios'
 
 export const ObsBox = () => {
   const toast = useToast()
   const [isObsLoading, setIsObsLoading] = useState(false)
-  const setting = useRecoilValue(settingState)
+  const apiUrl = useRecoilValue(apiUrlState)
   const [testName, setTestName] = useRecoilState(testNameState)
   const [powerSensorData, setPowerSensorData] = useState<PowerSensorDataType | null>(null)
   const [graphData, setGraphData] = useState<GraphDataType>({
@@ -40,7 +41,15 @@ export const ObsBox = () => {
   const { width, height } = useWindowSize()
 
   const startObsTest = async () => {
-    if (!setting?.success) return
+    if (!apiUrl) {
+      toast({
+        title: 'API not start',
+        status: 'error',
+        isClosable: true,
+      })
+      return
+    }
+
     if (testName.length === 0) {
       toast({
         title: 'Please input test name',
@@ -79,56 +88,70 @@ export const ObsBox = () => {
     }
 
     setIsObsLoading(true)
-    const apiUrl = setting.data.common.apiUrl
     const params: StartObsParamsType = {
       testName: testName,
       obsDuration: obsDuration,
       warmUpDuration: warmUpDuration,
       holdDuration: holdDuration,
     }
+    const timeout = (obsDuration + warmUpDuration + 10) * 1000
     const response = await axios
       .get(`${apiUrl}/obs/test/startObs`, {
         params: params,
+        timeout: timeout,
       })
-      .catch(() => ({
-        data: {
-          success: false,
-          error: 'Not exist: API',
-        },
-      }))
+      .catch((e: AxiosError) => {
+        let errorMessage = 'Not exist: API'
+        if (e.message.indexOf('timeout') !== -1) {
+          errorMessage = 'Timeout error'
+        }
+
+        return {
+          data: {
+            success: false,
+            error: errorMessage,
+          },
+        }
+      })
+
     const schemaResult = startObsReturnSchema.safeParse(response.data)
-    if (schemaResult.success) {
-      const data = schemaResult.data
-      if (data.success) {
-        const loss = parseInt(lossStr, 10)
-        setPowerSensorData({
-          time: data.data.time,
-          power: data.data.power,
-        })
-        setGraphData({
-          name: 'power',
-          x: data.data.time,
-          y: data.data.power.map((e) => {
-            if (Number.isNaN(loss)) {
-              return e
-            }
-            return e + loss
-          }),
-        })
-      } else {
-        toast({
-          title: data.error,
-          status: 'error',
-          isClosable: true,
-        })
-      }
-    } else {
+    if (!schemaResult.success) {
       toast({
         title: 'Response data type is not correct',
         status: 'error',
         isClosable: true,
       })
+      setIsObsLoading(false)
+      return
     }
+
+    const data = schemaResult.data
+    if (!data.success) {
+      toast({
+        title: data.error,
+        status: 'error',
+        isClosable: true,
+      })
+      setIsObsLoading(false)
+      return
+    }
+
+    const loss = parseInt(lossStr, 10)
+    setPowerSensorData({
+      time: data.data.time,
+      power: data.data.power,
+    })
+
+    setGraphData({
+      name: 'power',
+      x: data.data.time,
+      y: data.data.power.map((e) => {
+        if (Number.isNaN(loss)) {
+          return e
+        }
+        return e + loss
+      }),
+    })
     setIsObsLoading(false)
   }
 
