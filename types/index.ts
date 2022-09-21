@@ -102,6 +102,14 @@ export const apiDataStringSchema = z.union([
   errorSchema,
 ])
 
+export const apiDataNumberSchema = z.union([
+  z.object({
+    success: z.literal(true),
+    data: z.number(),
+  }),
+  errorSchema,
+])
+
 export type SasOnParamsType = {
   voc: number
   isc: number
@@ -129,7 +137,7 @@ export type StartObsParamsType = {
   holdDuration: number
 }
 
-export const startObsReturnSchema = z.union([
+export const obsPowerDataReturnSchema = z.union([
   z.object({
     success: z.literal(true),
     data: z.object({

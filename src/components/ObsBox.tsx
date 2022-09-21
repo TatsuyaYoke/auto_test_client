@@ -19,14 +19,14 @@ import { v4 as uuid4 } from 'uuid'
 
 import { apiUrlState, testNameState } from '@atoms/SettingAtom'
 import { MyPlot } from '@parts'
-import { startObsReturnSchema } from '@types'
+import { apiDataNumberSchema, apiNoDataSchema, obsPowerDataReturnSchema } from '@types'
 
 import type { StartObsParamsType, GraphDataType, PowerSensorDataType } from '@types'
-import type { AxiosError } from 'axios'
 
 export const ObsBox = () => {
   const toast = useToast()
   const [isObsLoading, setIsObsLoading] = useState(false)
+  const [powerLog, setPowerLog] = useState(0)
   const apiUrl = useRecoilValue(apiUrlState)
   const [testName, setTestName] = useRecoilState(testNameState)
   const [powerSensorData, setPowerSensorData] = useState<PowerSensorDataType | null>(null)
@@ -95,28 +95,20 @@ export const ObsBox = () => {
       warmUpDuration: warmUpDuration,
       holdDuration: holdDuration,
     }
-    const timeout = (obsDuration + warmUpDuration + 10) * 1000
-    const response = await axios
+    const duration = (obsDuration + warmUpDuration + 5) * 1000
+    const responseStartObs = await axios
       .get(`${apiUrl}/obs/test/startObs`, {
         params: params,
-        timeout: timeout,
       })
-      .catch((e: AxiosError) => {
-        let errorMessage = 'Not exist: API'
-        if (e.message.indexOf('timeout') !== -1) {
-          errorMessage = 'Timeout error'
-        }
+      .catch(() => ({
+        data: {
+          success: false,
+          error: 'Not exist: API',
+        },
+      }))
 
-        return {
-          data: {
-            success: false,
-            error: errorMessage,
-          },
-        }
-      })
-
-    const schemaResult = startObsReturnSchema.safeParse(response.data)
-    if (!schemaResult.success) {
+    const schemaResultStartObs = apiNoDataSchema.safeParse(responseStartObs.data)
+    if (!schemaResultStartObs.success) {
       toast({
         title: 'Response data type is not correct',
         status: 'error',
@@ -126,7 +118,7 @@ export const ObsBox = () => {
       return
     }
 
-    const data = schemaResult.data
+    const data = schemaResultStartObs.data
     if (!data.success) {
       toast({
         title: data.error,
@@ -138,15 +130,80 @@ export const ObsBox = () => {
     }
 
     const loss = parseInt(lossStr, 10)
+    const timerId = setInterval(async () => {
+      const responsePowerDataLog = await axios.get(`${apiUrl}/obs/powerSensor/getDataLog`).catch(() => ({
+        data: {
+          success: false,
+          error: 'Not exist: API',
+        },
+      }))
+
+      const schemaResultPowerDataLog = apiDataNumberSchema.safeParse(responsePowerDataLog.data)
+      if (!schemaResultPowerDataLog.success) {
+        toast({
+          title: 'Response data type is not correct',
+          status: 'error',
+          isClosable: true,
+        })
+      } else {
+        const powerLogData = schemaResultPowerDataLog.data
+        if (!powerLogData.success) {
+          toast({
+            title: powerLogData.error,
+            status: 'error',
+            isClosable: true,
+          })
+        } else {
+          const powerLogLoss = Number.isNaN(loss) ? powerLogData.data : powerLogData.data + loss
+          setPowerLog(powerLogLoss)
+        }
+      }
+    }, 1000)
+
+    await new Promise((resolve) => {
+      setTimeout(() => {
+        setIsObsLoading(false)
+        clearInterval(timerId)
+        resolve(true)
+      }, duration)
+    })
+
+    const responseObsPowerData = await axios.get(`${apiUrl}/obs/test/getObsPowerSensorData`).catch(() => ({
+      data: {
+        success: false,
+        error: 'Not exist: API',
+      },
+    }))
+
+    const schemaResultObsPowerData = obsPowerDataReturnSchema.safeParse(responseObsPowerData.data)
+    if (!schemaResultObsPowerData.success) {
+      toast({
+        title: 'Response data type is not correct',
+        status: 'error',
+        isClosable: true,
+      })
+      return
+    }
+
+    const obsPowerData = schemaResultObsPowerData.data
+    if (!obsPowerData.success) {
+      toast({
+        title: obsPowerData.error,
+        status: 'error',
+        isClosable: true,
+      })
+      return
+    }
+
     setPowerSensorData({
-      time: data.data.time,
-      power: data.data.power,
+      time: obsPowerData.data.time,
+      power: obsPowerData.data.power,
     })
 
     setGraphData({
       name: 'power',
-      x: data.data.time,
-      y: data.data.power.map((e) => {
+      x: obsPowerData.data.time,
+      y: obsPowerData.data.power.map((e) => {
         if (Number.isNaN(loss)) {
           return e
         }
@@ -226,6 +283,9 @@ export const ObsBox = () => {
           >
             START
           </Button>
+          <Text fontSize="24px" color="red">
+            Power {powerLog.toPrecision(3)} dB
+          </Text>
         </HStack>
         <HStack w="100%" spacing={4}>
           <Text>Loss</Text>
