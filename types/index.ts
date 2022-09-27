@@ -193,3 +193,7 @@ export type TransGetDataParamsType = {
   pathStr: string
   deleteFlag: boolean
 }
+
+export type TransScreenshotParamsType = {
+  sessionName: string
+}

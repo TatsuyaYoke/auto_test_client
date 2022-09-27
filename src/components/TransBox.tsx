@@ -23,7 +23,12 @@ import { apiUrlState, testNameState } from '@atoms/SettingAtom'
 import { BadgeSuccessBox } from '@parts'
 import { apiNoDataSchema, processingReturnSchema } from '@types'
 
-import type { TransRecordStartParamsType, TransProcessingParamsType, TransGetDataParamsType } from '@types'
+import type {
+  TransRecordStartParamsType,
+  TransProcessingParamsType,
+  TransGetDataParamsType,
+  TransScreenshotParamsType,
+} from '@types'
 import type { AxiosError } from 'axios'
 
 export const TransBox = () => {
@@ -279,6 +284,44 @@ export const TransBox = () => {
     }
   }
 
+  const screenshot = async () => {
+    const params: TransScreenshotParamsType = { sessionName: sessionName }
+    const response = await axios
+      .get(`${apiUrl}/trans/test/screenshot`, {
+        params: params,
+      })
+      .catch(() => ({
+        data: {
+          success: false,
+          error: 'Not exist: API',
+        },
+      }))
+
+    const schemaResult = apiNoDataSchema.safeParse(response.data)
+    if (!schemaResult.success) {
+      toast({
+        title: 'Response data type is not correct',
+        status: 'error',
+        isClosable: true,
+      })
+      return
+    }
+    const data = schemaResult.data
+    if (data.success) {
+      toast({
+        title: 'Screenshot success',
+        status: 'success',
+        isClosable: true,
+      })
+    } else {
+      toast({
+        title: data.error,
+        status: 'error',
+        isClosable: true,
+      })
+    }
+  }
+
   const changeModcod = async (modeEndPoint: '8psk_2_3 ' | '8psk_5_6') => {
     if (!apiUrl) {
       toast({
@@ -353,6 +396,9 @@ export const TransBox = () => {
             isDisabled={isProcessing}
           >
             RECORD
+          </Button>
+          <Button width="150px" colorScheme="teal" onClick={screenshot} isDisabled={!isRecording}>
+            Screenshot
           </Button>
           <Button width="150px" colorScheme="red" onClick={recordStop}>
             STOP
